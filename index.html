@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V4.2 Landscape Fix</title>
+    <title>14.1 Scoreboard - V5.0 Pro Control</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -31,11 +31,10 @@
             color: var(--text-color);
             margin: 0;
             padding: 8px;
-            /* WICHTIG FÜR LANDSCAPE: Erlaubt Scrolling wenn Höhe nicht reicht */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden; /* Nur horizontal scrollen verhindern */
+            overflow-x: hidden;
         }
 
         /* --- TOP BAR --- */
@@ -53,7 +52,7 @@
             padding: 8px 12px; border-radius: 6px; font-size: 0.8rem;
         }
 
-        /* --- TABLE STATUS & STATS BUTTON --- */
+        /* --- TABLE STATUS (CLICKABLE) --- */
         .table-status {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--balls-bg); padding: 5px 10px; border-radius: 8px;
@@ -62,13 +61,17 @@
             box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
             border: 1px solid #444;
             min-height: 50px;
+            cursor: pointer; /* Zeigt an, dass man klicken kann */
         }
-        .ts-info { display: flex; align-items: center; }
+        .table-status:active { background: #37474f; } /* Feedback beim Klicken */
+        
+        .ts-info { display: flex; align-items: center; flex: 1; }
         .ball-icon {
             display: inline-block; width: 18px; height: 18px; background: white; 
             border-radius: 50%; margin-right: 10px;
         }
-        /* Der neue Statistik Button oben */
+        .edit-hint { font-size: 0.8rem; color: #888; margin-left: auto; margin-right: 10px; font-weight: normal; }
+        
         .btn-stats-top {
             background: var(--accent-blue); color: white; border: none;
             font-size: 0.9rem; padding: 6px 12px; border-radius: 6px;
@@ -78,9 +81,7 @@
 
         /* --- SCOREBOARD --- */
         .scoreboard {
-            display: flex; gap: 8px; flex: 1; 
-            /* Flexibel bleiben, kein starres max-height mehr */
-            margin-bottom: 15px;
+            display: flex; gap: 8px; flex: 1; margin-bottom: 15px;
         }
         .player-card {
             flex: 1; background: var(--card-bg); border-radius: 8px; padding: 8px;
@@ -126,20 +127,10 @@
 
         /* --- CONTROLS --- */
         .controls {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: repeat(3, 1fr);
-            gap: 8px; 
-            /* Fixe Höhe entfernen, lieber min-height für Touch targets */
-            min-height: 300px; 
-            margin-bottom: 20px;
+            display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1.5fr 1fr 1fr;
+            gap: 8px; min-height: 300px; margin-bottom: 20px;
         }
-        
-        /* Landscape Optimization */
-        @media (orientation: landscape) {
-            .controls { min-height: 250px; }
-            .score-total { font-size: 2.5rem; }
-            .scoreboard { margin-bottom: 10px; }
-            body { padding-bottom: 20px; }
-        }
+        @media (orientation: landscape) { .controls { min-height: 250px; } }
 
         button {
             border: none; border-radius: 6px; color: white; font-size: 1rem; font-weight: bold;
@@ -150,22 +141,41 @@
         button:active { filter: brightness(0.8); transform: scale(0.98); }
         .btn-subtext { font-size: 0.6rem; font-weight: normal; opacity: 0.8; margin-top: 2px; }
 
-        .btn-point { grid-column: 1 / span 2; grid-row: 1 / span 2; background-color: var(--accent-green); font-size: 3.5rem; }
-        .btn-rack   { background-color: var(--accent-blue); grid-column: 3; grid-row: 1; transition: background 0.3s; }
-        .btn-miss   { background-color: var(--accent-grey); grid-column: 3; grid-row: 2; border-left: 4px solid #aaa;}
-        .btn-foul   { background-color: var(--accent-red); grid-column: 1; grid-row: 3; }
-        .btn-safety { background-color: var(--accent-orange); grid-column: 2; grid-row: 3; }
-        .btn-undo   { background-color: #444; grid-column: 3; grid-row: 3; }
+        /* Button Grid Layout */
+        .btn-point { grid-column: 1 / span 2; grid-row: 1; background-color: var(--accent-green); font-size: 3.5rem; }
+        .btn-rack  { background-color: var(--accent-blue); grid-column: 3; grid-row: 1; }
+        
+        /* New Row 2 */
+        .btn-minus { background-color: #d84315; grid-column: 1; grid-row: 2; font-size: 1.5rem; } /* -1 Button */
+        .btn-safe  { background-color: var(--accent-orange); grid-column: 2; grid-row: 2; }
+        .btn-miss  { background-color: var(--accent-grey); grid-column: 3; grid-row: 2; border-left: 4px solid #aaa;}
+        
+        /* Row 3 */
+        .btn-foul  { background-color: var(--accent-red); grid-column: 1; grid-row: 3; }
+        /* Platzhalter oder 2-Span */
+        .btn-undo  { background-color: #444; grid-column: 3; grid-row: 3; }
+        /* Spacer/Design Element im Grid */
+        .btn-spacer { background: transparent; grid-column: 2; grid-row: 3; pointer-events: none;}
+
 
         /* --- MODAL --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100;
-            overflow-y: auto; /* Scrollbar im Modal falls nötig */
         }
-        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; text-align: center; width: 90%; max-width: 400px; margin: auto;}
+        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; text-align: center; width: 90%; max-width: 400px; }
         .modal-btn { margin: 10px; padding: 12px 24px; font-size: 1rem; border-radius: 4px; cursor: pointer; width: 100%; }
-        
+
+        /* Ball Select Grid */
+        .ball-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .ball-btn { 
+            background: #333; color: white; border: 1px solid #555; padding: 15px 0; 
+            border-radius: 8px; font-weight: bold; font-size: 1.2rem; 
+        }
+        .ball-btn:active { background: var(--accent-blue); }
+        .ball-btn.disabled { opacity: 0.3; pointer-events: none; border-color: #222; }
+        .ball-btn.current { border-color: var(--active-border); color: var(--active-border); background: #252525; }
+
         .stats-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         .stats-table th, .stats-table td { padding: 8px; text-align: center; border-bottom: 1px solid #333; }
         .stats-table .row-label { text-align: left; font-weight: bold; color: #aaa; font-size: 0.8rem; }
@@ -184,13 +194,12 @@
     </div>
 
     <div class="table-status">
-        <div class="ts-info">
+        <div class="ts-info" onclick="openBallSelect()">
             <span class="ball-icon"></span>
             <span id="balls-display">15 Bälle</span>
+            <span class="edit-hint">✎ ändern</span>
         </div>
-        <button class="btn-stats-top" onclick="openStats()">
-            📊 Stats
-        </button>
+        <button class="btn-stats-top" onclick="openStats()">📊 Stats</button>
     </div>
 
     <div class="scoreboard">
@@ -232,10 +241,23 @@
     <div class="controls">
         <button class="btn-point" onclick="actionPoint()">+1</button>
         <button class="btn-rack" id="btn-rack" onclick="actionRack()">+14<span class="btn-subtext">RACK</span></button>
+        
+        <button class="btn-minus" onclick="actionMinusOne()">-1</button>
+        <button class="btn-safe" onclick="actionSafety()">SAFE<span class="btn-subtext">Wechsel</span></button>
         <button class="btn-miss" onclick="actionMiss()">MISS<span class="btn-subtext">Wechsel</span></button>
+
         <button class="btn-foul" onclick="actionFoul()">FOUL<span class="btn-subtext">-1 Punkt</span></button>
-        <button class="btn-safety" onclick="actionSafety()">SAFE<span class="btn-subtext">Wechsel</span></button>
-        <button class="btn-undo" onclick="actionUndo()">UNDO</button>
+        <div class="btn-spacer"></div> <button class="btn-undo" onclick="actionUndo()">UNDO</button>
+    </div>
+
+    <div class="modal" id="ballModal">
+        <div class="modal-content">
+            <h3>Bälle am Tisch</h3>
+            <p style="color:#aaa; font-size:0.8rem; margin-bottom:15px;">Wieviele Bälle liegen noch?</p>
+            <div class="ball-grid" id="ballGrid">
+                </div>
+            <button class="modal-btn" onclick="document.getElementById('ballModal').style.display='none'" style="background:#444; color:white;">Abbrechen</button>
+        </div>
     </div>
 
     <div class="modal" id="statsModal">
@@ -249,17 +271,8 @@
                     <tr><td class="row-label">GD</td><td id="st-p0-avg">0.0</td><td id="st-p1-avg">0.0</td></tr>
                     <tr><td class="row-label">High Run</td><td id="st-p0-hr">0</td><td id="st-p1-hr">0</td></tr>
                     <tr><td class="row-label">Quote</td><td id="st-p0-qt">100%</td><td id="st-p1-qt">100%</td></tr>
-                    
-                    <tr style="border-top: 1px solid #444;">
-                        <td class="row-label" style="color:#ef6c00;">Safeties</td>
-                        <td id="st-p0-safe">0</td>
-                        <td id="st-p1-safe">0</td>
-                    </tr>
-                    <tr>
-                        <td class="row-label" style="color:#e53935;">Fouls (Total)</td>
-                        <td id="st-p0-fouls">0</td>
-                        <td id="st-p1-fouls">0</td>
-                    </tr>
+                    <tr style="border-top: 1px solid #444;"><td class="row-label" style="color:#ef6c00;">Safeties</td><td id="st-p0-safe">0</td><td id="st-p1-safe">0</td></tr>
+                    <tr><td class="row-label" style="color:#e53935;">Fouls</td><td id="st-p0-fouls">0</td><td id="st-p1-fouls">0</td></tr>
                 </tbody>
             </table>
             <button class="modal-btn" onclick="document.getElementById('statsModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
@@ -319,6 +332,19 @@
             saveAndRender();
         }
 
+        function actionMinusOne() {
+            // New Correction Logic
+            const p = state.players[state.activePlayer];
+            if(p.run > 0) {
+                pushHistory();
+                p.run--; 
+                p.total--;
+                // Ball zurück auf den Tisch, maximal 15
+                if(state.ballsOnTable < 15) state.ballsOnTable++;
+                saveAndRender();
+            }
+        }
+
         function actionRack() {
             pushHistory();
             const p = state.players[state.activePlayer];
@@ -353,7 +379,6 @@
             const p = state.players[state.activePlayer];
             p.consecutiveFouls++; 
             p.fouls++; 
-
             if (p.consecutiveFouls >= 3) {
                 p.total -= 15;
                 alert(`⚠️ 3. Foul in Folge!\n${p.name} verliert 15 Punkte.\nDie Bälle werden neu aufgebaut.`);
@@ -392,13 +417,45 @@
             }
         }
 
+        // --- Ball Selection Logic ---
+        function openBallSelect() {
+            const grid = document.getElementById('ballGrid');
+            grid.innerHTML = '';
+            
+            // Generate Buttons 0-15
+            for(let i=0; i<=15; i++) {
+                let btn = document.createElement('button');
+                btn.className = 'ball-btn';
+                btn.innerText = i;
+                
+                // Highlight current
+                if(i === state.ballsOnTable) btn.classList.add('current');
+                
+                // Disable logic per request: Only allow 0 - current
+                if(i > state.ballsOnTable) {
+                    btn.classList.add('disabled');
+                } else {
+                    btn.onclick = function() { selectBalls(i); };
+                }
+                
+                grid.appendChild(btn);
+            }
+            document.getElementById('ballModal').style.display = 'flex';
+        }
+
+        function selectBalls(n) {
+            pushHistory();
+            state.ballsOnTable = n;
+            document.getElementById('ballModal').style.display = 'none';
+            saveAndRender();
+        }
+
         function saveAndRender() {
             saveState();
             render();
         }
 
         // --- Calculation & Render ---
-        
         function calculateStats(p) {
             let avg = (p.total / (p.innings === 0 && p.total > 0 ? 1 : Math.max(1, p.innings))).toFixed(2);
             let positivePots = Math.max(0, p.total); 
@@ -457,12 +514,9 @@
             const p1 = state.players[1];
             const s0 = calculateStats(p0);
             const s1 = calculateStats(p1);
-
             document.getElementById('th-p0').innerText = p0.name;
             document.getElementById('th-p1').innerText = p1.name;
-
             const fill = (id, val) => document.getElementById(id).innerText = val;
-
             fill('st-p0-total', p0.total); fill('st-p1-total', p1.total);
             fill('st-p0-inn', p0.innings); fill('st-p1-inn', p1.innings);
             fill('st-p0-avg', s0.avg);     fill('st-p1-avg', s1.avg);
@@ -470,14 +524,13 @@
             fill('st-p0-qt', s0.pct+"%");  fill('st-p1-qt', s1.pct+"%");
             fill('st-p0-safe', p0.safeties); fill('st-p1-safe', p1.safeties);
             fill('st-p0-fouls', p0.fouls); fill('st-p1-fouls', p1.fouls);
-
             document.getElementById('statsModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v4', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v5', JSON.stringify(state)); }
         
         function loadState() {
-            const saved = localStorage.getItem('141_final_v4');
+            const saved = localStorage.getItem('141_final_v5');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
