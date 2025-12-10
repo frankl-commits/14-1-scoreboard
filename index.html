@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V5.2 Auto-Rack</title>
+    <title>14.1 Scoreboard - V6.1 Pro Analytics</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -52,7 +52,7 @@
             padding: 8px 12px; border-radius: 6px; font-size: 0.8rem;
         }
 
-        /* --- TABLE STATUS (CLICKABLE) --- */
+        /* --- TABLE STATUS --- */
         .table-status {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--balls-bg); padding: 5px 10px; border-radius: 8px;
@@ -72,17 +72,16 @@
         }
         .edit-hint { font-size: 0.8rem; color: #888; margin-left: auto; margin-right: 10px; font-weight: normal; }
         
-        .btn-stats-top {
-            background: var(--accent-blue); color: white; border: none;
-            font-size: 0.9rem; padding: 6px 12px; border-radius: 6px;
+        .header-btns { display: flex; gap: 8px; }
+        .btn-header {
+            background: #444; color: white; border: none;
+            font-size: 0.8rem; padding: 6px 10px; border-radius: 6px;
             font-weight: bold; display: flex; align-items: center; gap: 5px;
             cursor: pointer;
         }
 
         /* --- SCOREBOARD --- */
-        .scoreboard {
-            display: flex; gap: 8px; flex: 1; margin-bottom: 15px;
-        }
+        .scoreboard { display: flex; gap: 8px; flex: 1; margin-bottom: 15px; }
         .player-card {
             flex: 1; background: var(--card-bg); border-radius: 8px; padding: 8px;
             display: flex; flex-direction: column; align-items: center;
@@ -141,28 +140,24 @@
         button:active { filter: brightness(0.8); transform: scale(0.98); }
         .btn-subtext { font-size: 0.6rem; font-weight: normal; opacity: 0.8; margin-top: 2px; }
 
-        /* Button Grid Layout */
+        /* Buttons Colors */
         .btn-point { grid-column: 1 / span 2; grid-row: 1; background-color: var(--accent-green); font-size: 3.5rem; }
         .btn-rack  { background-color: var(--accent-blue); grid-column: 3; grid-row: 1; }
-        
         .btn-minus { background-color: #d84315; grid-column: 1; grid-row: 2; font-size: 1.5rem; }
         .btn-safe  { background-color: var(--accent-orange); grid-column: 2; grid-row: 2; }
         .btn-miss  { background-color: var(--accent-grey); grid-column: 3; grid-row: 2; border-left: 4px solid #aaa;}
-        
         .btn-foul  { background-color: var(--accent-red); grid-column: 1; grid-row: 3; }
         .btn-undo  { background-color: #444; grid-column: 3; grid-row: 3; }
         .btn-spacer { background: transparent; grid-column: 2; grid-row: 3; pointer-events: none;}
 
-
-        /* --- MODAL --- */
+        /* --- MODALS --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100;
         }
-        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; text-align: center; width: 90%; max-width: 400px; }
+        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; text-align: center; width: 90%; max-width: 400px; max-height: 90vh; overflow-y: auto; }
         .modal-btn { margin: 10px; padding: 12px 24px; font-size: 1rem; border-radius: 4px; cursor: pointer; width: 100%; }
 
-        /* Ball Select Grid */
         .ball-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
         .ball-btn { 
             background: #333; color: white; border: 1px solid #555; padding: 15px 0; 
@@ -176,6 +171,9 @@
         .stats-table th, .stats-table td { padding: 8px; text-align: center; border-bottom: 1px solid #333; }
         .stats-table .row-label { text-align: left; font-weight: bold; color: #aaa; font-size: 0.8rem; }
         .stats-table .highlight { color: var(--active-border); font-weight: bold; }
+        
+        .time-header { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        .time-value { font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 15px; }
 
     </style>
 </head>
@@ -195,7 +193,10 @@
             <span id="balls-display">15 Bälle</span>
             <span class="edit-hint">✎ ändern</span>
         </div>
-        <button class="btn-stats-top" onclick="openStats()">📊 Stats</button>
+        <div class="header-btns">
+             <button class="btn-header" onclick="openTimeStats()">⏱ Zeit</button>
+             <button class="btn-header" onclick="openStats()" style="background: var(--accent-blue);">📊 Stats</button>
+        </div>
     </div>
 
     <div class="scoreboard">
@@ -251,8 +252,7 @@
         <div class="modal-content">
             <h3>Bälle am Tisch</h3>
             <p style="color:#aaa; font-size:0.8rem; margin-bottom:15px;">Differenz wird als Punkte addiert.</p>
-            <div class="ball-grid" id="ballGrid">
-                </div>
+            <div class="ball-grid" id="ballGrid"></div>
             <button class="modal-btn" onclick="document.getElementById('ballModal').style.display='none'" style="background:#444; color:white;">Abbrechen</button>
         </div>
     </div>
@@ -276,6 +276,43 @@
         </div>
     </div>
 
+    <div class="modal" id="timeModal">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">⏱ Zeit-Analyse</h3>
+            
+            <div class="time-header">Spielstart</div>
+            <div class="time-value" id="t-start">-</div>
+            <div class="time-header">Spielende</div>
+            <div class="time-value" id="t-end">läuft...</div>
+
+            <table class="stats-table">
+                <thead><tr><th>Metrik</th><th id="th-p0-t">A</th><th id="th-p1-t">B</th></tr></thead>
+                <tbody>
+                    <tr><td class="row-label">Ø Aufnahme</td><td id="t-p0-avg">0s</td><td id="t-p1-avg">0s</td></tr>
+                    
+                    <tr>
+                         <td class="row-label" style="color:#ef6c00;">Ø Safety</td>
+                         <td id="t-p0-safe-avg">-</td><td id="t-p1-safe-avg">-</td>
+                    </tr>
+                    <tr>
+                         <td class="row-label" style="color:#e53935;">Ø Fehler</td>
+                         <td id="t-p0-err-avg">-</td><td id="t-p1-err-avg">-</td>
+                    </tr>
+
+                    <tr style="border-top: 1px solid #444;">
+                        <td class="row-label" style="color:var(--active-border);">Schnellste<br><span style="font-size:0.6rem; font-weight:normal;">(pro Ball)</span></td>
+                        <td id="t-p0-fast">-</td><td id="t-p1-fast">-</td>
+                    </tr>
+                    <tr>
+                        <td class="row-label" style="color:#757575;">Langsamste<br><span style="font-size:0.6rem; font-weight:normal;">(pro Ball)</span></td>
+                        <td id="t-p0-slow">-</td><td id="t-p1-slow">-</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="modal-btn" onclick="document.getElementById('timeModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
+        </div>
+    </div>
+
     <div class="modal" id="resetModal">
         <div class="modal-content">
             <h3>Neues Spiel?</h3>
@@ -295,13 +332,19 @@
             misses: 0, 
             safeties: 0,
             fouls: 0,
-            consecutiveFouls: 0
+            consecutiveFouls: 0,
+            // inningLogs: stores { duration, run, type } 
+            // type: 'standard', 'safe', 'miss', 'foul'
+            inningLogs: [] 
         };
 
         let state = {
+            gameStartTime: Date.now(),
+            gameEndTime: null,
+            currentInningStart: Date.now(),
             players: [
-                { ...defaultPlayer, name: "Spieler A" },
-                { ...defaultPlayer, name: "Spieler B" }
+                { ...defaultPlayer, name: "Spieler A", inningLogs: [] },
+                { ...defaultPlayer, name: "Spieler B", inningLogs: [] }
             ],
             activePlayer: 0,
             target: 100,
@@ -327,11 +370,7 @@
             p.consecutiveFouls = 0; 
             
             if(state.ballsOnTable > 0) state.ballsOnTable--;
-            
-            // AUTO-RACK LOGIC: Wenn nur noch 1 Ball (Breakball) liegt -> Zurück auf 15
-            if(state.ballsOnTable === 1) {
-                state.ballsOnTable = 15;
-            }
+            if(state.ballsOnTable === 1) state.ballsOnTable = 15; 
 
             saveAndRender();
         }
@@ -365,14 +404,14 @@
             pushHistory();
             state.players[state.activePlayer].safeties++;
             state.players[state.activePlayer].consecutiveFouls = 0;
-            endInning();
+            endInning('safe');
         }
 
         function actionMiss() {
             pushHistory();
             state.players[state.activePlayer].misses++;
             state.players[state.activePlayer].consecutiveFouls = 0;
-            endInning();
+            endInning('miss');
         }
 
         function actionFoul() {
@@ -388,11 +427,23 @@
             } else {
                 p.total--; 
             }
-            endInning();
+            endInning('foul');
         }
 
-        function endInning() {
+        function endInning(type = 'standard') {
             const p = state.players[state.activePlayer];
+            
+            // TIME LOGIC
+            let now = Date.now();
+            let durationSec = (now - state.currentInningStart) / 1000;
+            
+            p.inningLogs.push({
+                duration: durationSec,
+                run: p.run,
+                type: type // store reason
+            });
+            state.currentInningStart = now; 
+
             p.innings++; 
             p.run = 0;
             switchPlayer();
@@ -412,13 +463,14 @@
         function setManualActive(index) {
             if(state.activePlayer !== index) {
                 pushHistory();
+                state.currentInningStart = Date.now(); // Reset Timer
                 state.players[state.activePlayer].run = 0;
                 state.activePlayer = index;
                 saveAndRender();
             }
         }
 
-        // --- Ball Selection Logic ---
+        // --- Ball Selection ---
         function openBallSelect() {
             const grid = document.getElementById('ballGrid');
             grid.innerHTML = '';
@@ -427,8 +479,6 @@
                 btn.className = 'ball-btn';
                 btn.innerText = i;
                 if(i === state.ballsOnTable) btn.classList.add('current');
-                
-                // Restriction: Only lower values
                 if(i > state.ballsOnTable) {
                     btn.classList.add('disabled');
                 } else {
@@ -441,23 +491,14 @@
 
         function selectBalls(n) {
             pushHistory();
-            
-            // Berechne Differenz und addiere Punkte
-            let diff = state.ballsOnTable - n; // z.B. 15 - 10 = 5 Punkte
+            let diff = state.ballsOnTable - n; 
             const p = state.players[state.activePlayer];
-            
             p.run += diff;
             p.total += diff;
             if(p.run > p.highRun) p.highRun = p.run;
             if(diff > 0) p.consecutiveFouls = 0; 
-
             state.ballsOnTable = n;
-            
-            // Auto-Rack im Dialog Check (falls man auf 1 klickt)
-            if(state.ballsOnTable === 1) {
-                state.ballsOnTable = 15;
-            }
-
+            if(state.ballsOnTable === 1) state.ballsOnTable = 15;
             document.getElementById('ballModal').style.display = 'none';
             saveAndRender();
         }
@@ -467,7 +508,7 @@
             render();
         }
 
-        // --- Calculation & Render ---
+        // --- Stats & Helpers ---
         function calculateStats(p) {
             let avg = (p.total / (p.innings === 0 && p.total > 0 ? 1 : Math.max(1, p.innings))).toFixed(2);
             let positivePots = Math.max(0, p.total); 
@@ -477,16 +518,69 @@
             return { avg, pct };
         }
 
+        function formatTime(timestamp) {
+            if(!timestamp) return "-";
+            let d = new Date(timestamp);
+            return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function calculateTimeStats(p) {
+            if (p.inningLogs.length === 0) return { avg: "0s", fast: "-", slow: "-", safeAvg: "-", errAvg: "-" };
+
+            let totalDur = 0;
+            let minSecPerBall = Infinity;
+            let maxSecPerBall = 0;
+            
+            // Stats buckets
+            let safeSum = 0, safeCount = 0;
+            let errSum = 0, errCount = 0; // Miss & Fouls
+
+            p.inningLogs.forEach(log => {
+                totalDur += log.duration;
+                
+                // Speed Calculation
+                if (log.run > 0) {
+                    let spb = log.duration / log.run;
+                    if (spb < minSecPerBall) minSecPerBall = spb;
+                    if (spb > maxSecPerBall) maxSecPerBall = spb;
+                }
+
+                // Type Stats
+                if (log.type === 'safe') {
+                    safeSum += log.duration;
+                    safeCount++;
+                } else if (log.type === 'miss' || log.type === 'foul') {
+                    errSum += log.duration;
+                    errCount++;
+                }
+            });
+
+            let avg = Math.round(totalDur / p.inningLogs.length) + "s";
+            let fast = minSecPerBall === Infinity ? "-" : Math.round(minSecPerBall) + "s";
+            let slow = maxSecPerBall === 0 ? "-" : Math.round(maxSecPerBall) + "s";
+            
+            let safeAvg = safeCount === 0 ? "-" : Math.round(safeSum / safeCount) + "s";
+            let errAvg = errCount === 0 ? "-" : Math.round(errSum / errCount) + "s";
+
+            return { avg, fast, slow, safeAvg, errAvg };
+        }
+
         function render() {
             const p0 = state.players[0];
             const p1 = state.players[1];
             const active = state.activePlayer;
 
+            // Check Game End
+            if ((p0.total >= state.target || p1.total >= state.target) && !state.gameEndTime) {
+                state.gameEndTime = Date.now();
+            } else if (p0.total < state.target && p1.total < state.target) {
+                state.gameEndTime = null; 
+            }
+
             document.getElementById('balls-display').innerText = `${state.ballsOnTable} Bälle`;
 
             const rackBtn = document.getElementById('btn-rack');
             let potentialPoints = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
-            
             if (potentialPoints > 0) {
                 rackBtn.innerHTML = `+${potentialPoints} <span class="btn-subtext">REST & RACK</span>`;
                 rackBtn.style.backgroundColor = "var(--accent-blue)";
@@ -497,7 +591,6 @@
 
             document.getElementById('p0-card').className = `player-card ${active === 0 ? 'active' : ''}`;
             document.getElementById('p1-card').className = `player-card ${active === 1 ? 'active' : ''}`;
-
             document.getElementById('p0-foul-warn').style.display = (p0.consecutiveFouls === 2) ? 'block' : 'none';
             document.getElementById('p1-foul-warn').style.display = (p1.consecutiveFouls === 2) ? 'block' : 'none';
 
@@ -512,7 +605,6 @@
             document.getElementById('p0-avg').innerText = s0.avg;
             document.getElementById('p0-hr').innerText = p0.highRun;
             document.getElementById('p0-pct').innerText = s0.pct + "%";
-
             document.getElementById('p1-avg').innerText = s1.avg;
             document.getElementById('p1-hr').innerText = p1.highRun;
             document.getElementById('p1-pct').innerText = s1.pct + "%";
@@ -539,18 +631,50 @@
             document.getElementById('statsModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v5_2', JSON.stringify(state)); }
+        function openTimeStats() {
+            const p0 = state.players[0];
+            const p1 = state.players[1];
+            const t0 = calculateTimeStats(p0);
+            const t1 = calculateTimeStats(p1);
+
+            document.getElementById('th-p0-t').innerText = p0.name;
+            document.getElementById('th-p1-t').innerText = p1.name;
+
+            document.getElementById('t-start').innerText = formatTime(state.gameStartTime);
+            document.getElementById('t-end').innerText = state.gameEndTime ? formatTime(state.gameEndTime) : "läuft...";
+
+            document.getElementById('t-p0-avg').innerText = t0.avg;
+            document.getElementById('t-p1-avg').innerText = t1.avg;
+            
+            // New Fields
+            document.getElementById('t-p0-safe-avg').innerText = t0.safeAvg;
+            document.getElementById('t-p1-safe-avg').innerText = t1.safeAvg;
+            document.getElementById('t-p0-err-avg').innerText = t0.errAvg;
+            document.getElementById('t-p1-err-avg').innerText = t1.errAvg;
+
+            document.getElementById('t-p0-fast').innerText = t0.fast;
+            document.getElementById('t-p1-fast').innerText = t1.fast;
+            document.getElementById('t-p0-slow').innerText = t0.slow;
+            document.getElementById('t-p1-slow').innerText = t1.slow;
+
+            document.getElementById('timeModal').style.display = 'flex';
+        }
+
+        function saveState() { localStorage.setItem('141_final_v6_1', JSON.stringify(state)); }
         
         function loadState() {
-            const saved = localStorage.getItem('141_final_v5_2');
+            const saved = localStorage.getItem('141_final_v6_1');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
                     if(typeof loaded.ballsOnTable === 'undefined') loaded.ballsOnTable = 15;
+                    if(!loaded.gameStartTime) loaded.gameStartTime = Date.now();
+                    if(!loaded.currentInningStart) loaded.currentInningStart = Date.now();
                     loaded.players.forEach(p => {
+                        if(!p.inningLogs) p.inningLogs = [];
                         if(typeof p.consecutiveFouls === 'undefined') p.consecutiveFouls = 0;
-                        if(typeof p.fouls === 'undefined') p.fouls = 0;
                     });
+                    
                     state = loaded;
                     document.getElementById('p0-name').value = state.players[0].name;
                     document.getElementById('p1-name').value = state.players[1].name;
@@ -569,9 +693,15 @@
         function resetGame(ask) {
             if(ask) { document.getElementById('resetModal').style.display = 'flex'; }
             else {
-                state.players = [ { ...defaultPlayer, name: state.players[0].name }, { ...defaultPlayer, name: state.players[1].name } ];
+                state.players = [ 
+                    { ...defaultPlayer, name: state.players[0].name, inningLogs: [] }, 
+                    { ...defaultPlayer, name: state.players[1].name, inningLogs: [] } 
+                ];
                 state.activePlayer = 0;
                 state.ballsOnTable = 15;
+                state.gameStartTime = Date.now();
+                state.gameEndTime = null;
+                state.currentInningStart = Date.now();
                 historyStack = [];
                 saveAndRender();
             }
