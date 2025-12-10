@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V5.0 Pro Control</title>
+    <title>14.1 Scoreboard - V5.1 Smart Input</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -61,9 +61,9 @@
             box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
             border: 1px solid #444;
             min-height: 50px;
-            cursor: pointer; /* Zeigt an, dass man klicken kann */
+            cursor: pointer; 
         }
-        .table-status:active { background: #37474f; } /* Feedback beim Klicken */
+        .table-status:active { background: #37474f; }
         
         .ts-info { display: flex; align-items: center; flex: 1; }
         .ball-icon {
@@ -145,16 +145,12 @@
         .btn-point { grid-column: 1 / span 2; grid-row: 1; background-color: var(--accent-green); font-size: 3.5rem; }
         .btn-rack  { background-color: var(--accent-blue); grid-column: 3; grid-row: 1; }
         
-        /* New Row 2 */
-        .btn-minus { background-color: #d84315; grid-column: 1; grid-row: 2; font-size: 1.5rem; } /* -1 Button */
+        .btn-minus { background-color: #d84315; grid-column: 1; grid-row: 2; font-size: 1.5rem; }
         .btn-safe  { background-color: var(--accent-orange); grid-column: 2; grid-row: 2; }
         .btn-miss  { background-color: var(--accent-grey); grid-column: 3; grid-row: 2; border-left: 4px solid #aaa;}
         
-        /* Row 3 */
         .btn-foul  { background-color: var(--accent-red); grid-column: 1; grid-row: 3; }
-        /* Platzhalter oder 2-Span */
         .btn-undo  { background-color: #444; grid-column: 3; grid-row: 3; }
-        /* Spacer/Design Element im Grid */
         .btn-spacer { background: transparent; grid-column: 2; grid-row: 3; pointer-events: none;}
 
 
@@ -247,13 +243,14 @@
         <button class="btn-miss" onclick="actionMiss()">MISS<span class="btn-subtext">Wechsel</span></button>
 
         <button class="btn-foul" onclick="actionFoul()">FOUL<span class="btn-subtext">-1 Punkt</span></button>
-        <div class="btn-spacer"></div> <button class="btn-undo" onclick="actionUndo()">UNDO</button>
+        <div class="btn-spacer"></div>
+        <button class="btn-undo" onclick="actionUndo()">UNDO</button>
     </div>
 
     <div class="modal" id="ballModal">
         <div class="modal-content">
             <h3>Bälle am Tisch</h3>
-            <p style="color:#aaa; font-size:0.8rem; margin-bottom:15px;">Wieviele Bälle liegen noch?</p>
+            <p style="color:#aaa; font-size:0.8rem; margin-bottom:15px;">Differenz wird als Punkte addiert.</p>
             <div class="ball-grid" id="ballGrid">
                 </div>
             <button class="modal-btn" onclick="document.getElementById('ballModal').style.display='none'" style="background:#444; color:white;">Abbrechen</button>
@@ -333,13 +330,10 @@
         }
 
         function actionMinusOne() {
-            // New Correction Logic
             const p = state.players[state.activePlayer];
             if(p.run > 0) {
                 pushHistory();
-                p.run--; 
-                p.total--;
-                // Ball zurück auf den Tisch, maximal 15
+                p.run--; p.total--;
                 if(state.ballsOnTable < 15) state.ballsOnTable++;
                 saveAndRender();
             }
@@ -421,23 +415,18 @@
         function openBallSelect() {
             const grid = document.getElementById('ballGrid');
             grid.innerHTML = '';
-            
-            // Generate Buttons 0-15
             for(let i=0; i<=15; i++) {
                 let btn = document.createElement('button');
                 btn.className = 'ball-btn';
                 btn.innerText = i;
-                
-                // Highlight current
                 if(i === state.ballsOnTable) btn.classList.add('current');
                 
-                // Disable logic per request: Only allow 0 - current
+                // Restriction: Only lower values
                 if(i > state.ballsOnTable) {
                     btn.classList.add('disabled');
                 } else {
                     btn.onclick = function() { selectBalls(i); };
                 }
-                
                 grid.appendChild(btn);
             }
             document.getElementById('ballModal').style.display = 'flex';
@@ -445,6 +434,16 @@
 
         function selectBalls(n) {
             pushHistory();
+            
+            // Berechne Differenz und addiere Punkte
+            let diff = state.ballsOnTable - n; // z.B. 15 - 10 = 5 Punkte
+            const p = state.players[state.activePlayer];
+            
+            p.run += diff;
+            p.total += diff;
+            if(p.run > p.highRun) p.highRun = p.run;
+            if(diff > 0) p.consecutiveFouls = 0; // Erfolgserlebnis resetet Foul
+
             state.ballsOnTable = n;
             document.getElementById('ballModal').style.display = 'none';
             saveAndRender();
@@ -527,10 +526,10 @@
             document.getElementById('statsModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v5', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v5_1', JSON.stringify(state)); }
         
         function loadState() {
-            const saved = localStorage.getItem('141_final_v5');
+            const saved = localStorage.getItem('141_final_v5_1');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
