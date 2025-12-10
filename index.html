@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V6.1 Pro Analytics</title>
+    <title>14.1 Scoreboard - V6.2 Innings Display</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -103,8 +103,9 @@
         .score-total { font-size: 3.5rem; font-weight: bold; line-height: 1; margin: 2px 0 10px 0; }
         .score-run { font-size: 2rem; color: var(--active-border); font-weight: bold; margin-bottom: 5px; }
 
+        /* STATS GRID (jetzt 4 Spalten) */
         .stats-grid {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; width: 100%; gap: 2px;
+            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; width: 100%; gap: 2px;
             background: #333; padding: 2px; border-radius: 4px; margin-top: auto;
         }
         .stat-box { background: var(--card-bg); text-align: center; padding: 4px 0; }
@@ -211,6 +212,7 @@
                 <div class="score-run" id="p0-run">0</div>
             </div>
             <div class="stats-grid">
+                <div class="stat-box"><div class="stat-val" id="p0-inn">0</div><div class="stat-lbl">INN</div></div>
                 <div class="stat-box"><div class="stat-val" id="p0-avg">0.0</div><div class="stat-lbl">GD</div></div>
                 <div class="stat-box"><div class="stat-val" id="p0-hr">0</div><div class="stat-lbl">HR</div></div>
                 <div class="stat-box"><div class="stat-val" id="p0-pct">100%</div><div class="stat-lbl">%</div></div>
@@ -228,6 +230,7 @@
                 <div class="score-run" id="p1-run">0</div>
             </div>
             <div class="stats-grid">
+                <div class="stat-box"><div class="stat-val" id="p1-inn">0</div><div class="stat-lbl">INN</div></div>
                 <div class="stat-box"><div class="stat-val" id="p1-avg">0.0</div><div class="stat-lbl">GD</div></div>
                 <div class="stat-box"><div class="stat-val" id="p1-hr">0</div><div class="stat-lbl">HR</div></div>
                 <div class="stat-box"><div class="stat-val" id="p1-pct">100%</div><div class="stat-lbl">%</div></div>
@@ -333,8 +336,6 @@
             safeties: 0,
             fouls: 0,
             consecutiveFouls: 0,
-            // inningLogs: stores { duration, run, type } 
-            // type: 'standard', 'safe', 'miss', 'foul'
             inningLogs: [] 
         };
 
@@ -440,7 +441,7 @@
             p.inningLogs.push({
                 duration: durationSec,
                 run: p.run,
-                type: type // store reason
+                type: type 
             });
             state.currentInningStart = now; 
 
@@ -463,7 +464,7 @@
         function setManualActive(index) {
             if(state.activePlayer !== index) {
                 pushHistory();
-                state.currentInningStart = Date.now(); // Reset Timer
+                state.currentInningStart = Date.now(); 
                 state.players[state.activePlayer].run = 0;
                 state.activePlayer = index;
                 saveAndRender();
@@ -531,21 +532,18 @@
             let minSecPerBall = Infinity;
             let maxSecPerBall = 0;
             
-            // Stats buckets
             let safeSum = 0, safeCount = 0;
-            let errSum = 0, errCount = 0; // Miss & Fouls
+            let errSum = 0, errCount = 0; 
 
             p.inningLogs.forEach(log => {
                 totalDur += log.duration;
                 
-                // Speed Calculation
                 if (log.run > 0) {
                     let spb = log.duration / log.run;
                     if (spb < minSecPerBall) minSecPerBall = spb;
                     if (spb > maxSecPerBall) maxSecPerBall = spb;
                 }
 
-                // Type Stats
                 if (log.type === 'safe') {
                     safeSum += log.duration;
                     safeCount++;
@@ -602,9 +600,12 @@
             const s0 = calculateStats(p0);
             const s1 = calculateStats(p1);
 
+            document.getElementById('p0-inn').innerText = p0.innings;
             document.getElementById('p0-avg').innerText = s0.avg;
             document.getElementById('p0-hr').innerText = p0.highRun;
             document.getElementById('p0-pct').innerText = s0.pct + "%";
+
+            document.getElementById('p1-inn').innerText = p1.innings;
             document.getElementById('p1-avg').innerText = s1.avg;
             document.getElementById('p1-hr').innerText = p1.highRun;
             document.getElementById('p1-pct').innerText = s1.pct + "%";
@@ -660,10 +661,10 @@
             document.getElementById('timeModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v6_1', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v6_2', JSON.stringify(state)); }
         
         function loadState() {
-            const saved = localStorage.getItem('141_final_v6_1');
+            const saved = localStorage.getItem('141_final_v6_2');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
