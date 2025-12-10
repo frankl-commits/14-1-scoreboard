@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V6.2 Innings Display</title>
+    <title>14.1 Scoreboard - V6.3 Stats Complete</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -103,7 +103,6 @@
         .score-total { font-size: 3.5rem; font-weight: bold; line-height: 1; margin: 2px 0 10px 0; }
         .score-run { font-size: 2rem; color: var(--active-border); font-weight: bold; margin-bottom: 5px; }
 
-        /* STATS GRID (jetzt 4 Spalten) */
         .stats-grid {
             display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; width: 100%; gap: 2px;
             background: #333; padding: 2px; border-radius: 4px; margin-top: auto;
@@ -271,8 +270,19 @@
                     <tr><td class="row-label">GD</td><td id="st-p0-avg">0.0</td><td id="st-p1-avg">0.0</td></tr>
                     <tr><td class="row-label">High Run</td><td id="st-p0-hr">0</td><td id="st-p1-hr">0</td></tr>
                     <tr><td class="row-label">Quote</td><td id="st-p0-qt">100%</td><td id="st-p1-qt">100%</td></tr>
-                    <tr style="border-top: 1px solid #444;"><td class="row-label" style="color:#ef6c00;">Safeties</td><td id="st-p0-safe">0</td><td id="st-p1-safe">0</td></tr>
-                    <tr><td class="row-label" style="color:#e53935;">Fouls</td><td id="st-p0-fouls">0</td><td id="st-p1-fouls">0</td></tr>
+                    
+                    <tr style="border-top: 1px solid #444;">
+                        <td class="row-label" style="color:#ef6c00;">Safeties</td>
+                        <td id="st-p0-safe">0</td><td id="st-p1-safe">0</td>
+                    </tr>
+                    <tr>
+                        <td class="row-label" style="color:#aaa;">Miss (Fehler)</td>
+                        <td id="st-p0-miss">0</td><td id="st-p1-miss">0</td>
+                    </tr>
+                    <tr>
+                        <td class="row-label" style="color:#e53935;">Fouls</td>
+                        <td id="st-p0-fouls">0</td><td id="st-p1-fouls">0</td>
+                    </tr>
                 </tbody>
             </table>
             <button class="modal-btn" onclick="document.getElementById('statsModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
@@ -628,6 +638,7 @@
             fill('st-p0-hr', p0.highRun);  fill('st-p1-hr', p1.highRun);
             fill('st-p0-qt', s0.pct+"%");  fill('st-p1-qt', s1.pct+"%");
             fill('st-p0-safe', p0.safeties); fill('st-p1-safe', p1.safeties);
+            fill('st-p0-miss', p0.misses); fill('st-p1-miss', p1.misses);
             fill('st-p0-fouls', p0.fouls); fill('st-p1-fouls', p1.fouls);
             document.getElementById('statsModal').style.display = 'flex';
         }
@@ -661,10 +672,10 @@
             document.getElementById('timeModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v6_2', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v6_3', JSON.stringify(state)); }
         
         function loadState() {
-            const saved = localStorage.getItem('141_final_v6_2');
+            const saved = localStorage.getItem('141_final_v6_3');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
