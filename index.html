@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>14.1 Scoreboard</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
+
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-green: #2e7d32;
+            --accent-red: #c62828;
+            --accent-blue: #1565c0;
+            --accent-orange: #ef6c00;
+            --accent-grey: #616161;
+            --active-border: #00e676;
+            --balls-bg: #263238;
+        }
+
+        * { box-sizing: border-box; touch-action: manipulation; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 8px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- UI COMPONENTS --- */
+
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 8px; font-size: 0.9rem; min-height: 50px;
+        }
+        .top-bar input {
+            background: var(--card-bg); border: 1px solid #444; color: white;
+            padding: 8px; width: 80px; text-align: center; border-radius: 6px;
+            font-size: 1.2rem; font-weight: bold;
+        }
+        .btn-small {
+            background: #333; border: none; color: #aaa;
+            padding: 8px 12px; border-radius: 6px; font-size: 0.8rem;
+        }
+
+        .table-status {
+            display: flex; justify-content: center; align-items: center;
+            background: var(--balls-bg); padding: 10px; border-radius: 8px;
+            margin-bottom: 10px; font-weight: bold; 
+            font-size: 1.4rem; 
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+            border: 1px solid #444;
+        }
+        .ball-icon {
+            display: inline-block; width: 18px; height: 18px; background: white; 
+            border-radius: 50%; margin-right: 10px;
+        }
+
+        /* Score Area */
+        .scoreboard {
+            display: flex; gap: 8px; flex: 1; max-height: 40vh; margin-bottom: 10px;
+        }
+        .player-card {
+            flex: 1; background: var(--card-bg); border-radius: 8px; padding: 8px;
+            display: flex; flex-direction: column; align-items: center;
+            position: relative; border: 2px solid transparent; transition: all 0.2s;
+        }
+        .player-card.active {
+            border-color: var(--active-border); background-color: #252525;
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.15);
+        }
+        .player-name-input {
+            background: rgba(0,0,0,0.2); border: 1px solid transparent; border-radius: 4px;
+            color: var(--text-color); font-size: 1.1rem; text-align: center; width: 100%;
+            margin-bottom: 5px; font-weight: bold; padding: 4px;
+        }
+        .main-scores {
+            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;
+        }
+        .score-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .score-total { font-size: 3.5rem; font-weight: bold; line-height: 1; margin: 2px 0 10px 0; }
+        .score-run { font-size: 2rem; color: var(--active-border); font-weight: bold; margin-bottom: 5px; }
+
+        .stats-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; width: 100%; gap: 2px;
+            background: #333; padding: 2px; border-radius: 4px; margin-top: auto;
+        }
+        .stat-box { background: var(--card-bg); text-align: center; padding: 4px 0; }
+        .stat-val { font-size: 0.9rem; font-weight: bold; color: white; }
+        .stat-lbl { font-size: 0.6rem; color: #aaa; }
+
+        .winner-badge {
+            display: none; position: absolute; top: 5px; right: 5px;
+            background: gold; color: black; padding: 2px 6px;
+            border-radius: 4px; font-weight: bold; font-size: 0.6rem; z-index: 10;
+        }
+        
+        .foul-warning {
+            display: none; position: absolute; top: 5px; left: 5px;
+            background: var(--accent-red); color: white; padding: 2px 6px;
+            border-radius: 4px; font-weight: bold; font-size: 0.7rem; z-index: 10;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .controls {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: repeat(3, 1fr);
+            gap: 8px; height: 35vh; 
+        }
+        button {
+            border: none; border-radius: 6px; color: white; font-size: 1rem; font-weight: bold;
+            cursor: pointer; position: relative; overflow: hidden;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            text-align: center;
+        }
+        button:active { filter: brightness(0.8); transform: scale(0.98); }
+        .btn-subtext { font-size: 0.6rem; font-weight: normal; opacity: 0.8; margin-top: 2px; }
+
+        .btn-point { grid-column: 1 / span 2; grid-row: 1 / span 2; background-color: var(--accent-green); font-size: 3.5rem; }
+        .btn-rack   { background-color: var(--accent-blue); grid-column: 3; grid-row: 1; transition: background 0.3s; }
+        .btn-miss   { background-color: var(--accent-grey); grid-column: 3; grid-row: 2; border-left: 4px solid #aaa;}
+        .btn-foul   { background-color: var(--accent-red); grid-column: 1; grid-row: 3; }
+        .btn-safety { background-color: var(--accent-orange); grid-column: 2; grid-row: 3; }
+        .btn-undo   { background-color: #444; grid-column: 3; grid-row: 3; }
+
+        .fab-container {
+            position: fixed; bottom: 15px; width: 100%; left: 0;
+            display: flex; justify-content: space-between; padding: 0 15px;
+            pointer-events: none;
+        }
+        .fab {
+            pointer-events: auto; background: #252525; color: white; border: 1px solid #444;
+            width: 45px; height: 45px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 50;
+        }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; text-align: center; width: 90%; max-width: 400px; }
+        .modal-btn { margin: 10px; padding: 12px 24px; font-size: 1rem; border-radius: 4px; cursor: pointer; width: 100%; }
+        
+        .stats-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .stats-table th, .stats-table td { padding: 8px; text-align: center; border-bottom: 1px solid #333; }
+        .stats-table .row-label { text-align: left; font-weight: bold; color: #aaa; font-size: 0.8rem; }
+        .stats-table .highlight { color: var(--active-border); font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <button class="btn-small" onclick="resetGame(true)">RESET</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:0.9rem; color:#aaa;">Ziel:</span> 
+            <input type="number" id="targetScore" value="100" onchange="updateSettings()">
+        </div>
+    </div>
+
+    <div class="table-status">
+        <span class="ball-icon"></span>
+        <span id="balls-display">15 Bälle</span>
+    </div>
+
+    <div class="scoreboard">
+        <div class="player-card active" id="p0-card" onclick="setManualActive(0)">
+            <div class="winner-badge" id="p0-win">WIN</div>
+            <div class="foul-warning" id="p0-foul-warn">2 FOULS!</div>
+            <input type="text" class="player-name-input" id="p0-name" value="Spieler A" onchange="updateSettings()">
+            <div class="main-scores">
+                <div class="score-label">Total</div>
+                <div class="score-total" id="p0-total">0</div>
+                <div class="score-label">Aufnahme</div>
+                <div class="score-run" id="p0-run">0</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box"><div class="stat-val" id="p0-avg">0.0</div><div class="stat-lbl">GD</div></div>
+                <div class="stat-box"><div class="stat-val" id="p0-hr">0</div><div class="stat-lbl">HR</div></div>
+                <div class="stat-box"><div class="stat-val" id="p0-pct">100%</div><div class="stat-lbl">%</div></div>
+            </div>
+        </div>
+
+        <div class="player-card" id="p1-card" onclick="setManualActive(1)">
+            <div class="winner-badge" id="p1-win">WIN</div>
+            <div class="foul-warning" id="p1-foul-warn">2 FOULS!</div>
+            <input type="text" class="player-name-input" id="p1-name" value="Spieler B" onchange="updateSettings()">
+            <div class="main-scores">
+                <div class="score-label">Total</div>
+                <div class="score-total" id="p1-total">0</div>
+                <div class="score-label">Aufnahme</div>
+                <div class="score-run" id="p1-run">0</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box"><div class="stat-val" id="p1-avg">0.0</div><div class="stat-lbl">GD</div></div>
+                <div class="stat-box"><div class="stat-val" id="p1-hr">0</div><div class="stat-lbl">HR</div></div>
+                <div class="stat-box"><div class="stat-val" id="p1-pct">100%</div><div class="stat-lbl">%</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-point" onclick="actionPoint()">+1</button>
+        <button class="btn-rack" id="btn-rack" onclick="actionRack()">+14<span class="btn-subtext">RACK</span></button>
+        <button class="btn-miss" onclick="actionMiss()">MISS<span class="btn-subtext">Wechsel</span></button>
+        <button class="btn-foul" onclick="actionFoul()">FOUL<span class="btn-subtext">-1 Punkt</span></button>
+        <button class="btn-safety" onclick="actionSafety()">SAFE<span class="btn-subtext">Wechsel</span></button>
+        <button class="btn-undo" onclick="actionUndo()">UNDO</button>
+    </div>
+
+    <div class="fab-container">
+        <button class="fab" onclick="copyStats()" title="Copy Short Stats">📋</button>
+        <button class="fab" onclick="openStats()" style="background:var(--accent-blue); border-color:var(--accent-blue);">📊</button>
+    </div>
+
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">Match Statistik</h3>
+            <table class="stats-table">
+                <thead><tr><th>Metric</th><th id="th-p0">A</th><th id="th-p1">B</th></tr></thead>
+                <tbody>
+                    <tr><td class="row-label">Punkte</td><td id="st-p0-total" class="highlight">0</td><td id="st-p1-total" class="highlight">0</td></tr>
+                    <tr><td class="row-label">Aufnahmen</td><td id="st-p0-inn">0</td><td id="st-p1-inn">0</td></tr>
+                    <tr><td class="row-label">GD</td><td id="st-p0-avg">0.0</td><td id="st-p1-avg">0.0</td></tr>
+                    <tr><td class="row-label">High Run</td><td id="st-p0-hr">0</td><td id="st-p1-hr">0</td></tr>
+                    <tr><td class="row-label">Quote</td><td id="st-p0-qt">100%</td><td id="st-p1-qt">100%</td></tr>
+                    
+                    <tr style="border-top: 1px solid #444;">
+                        <td class="row-label" style="color:#ef6c00;">Safeties</td>
+                        <td id="st-p0-safe">0</td>
+                        <td id="st-p1-safe">0</td>
+                    </tr>
+                    <tr>
+                        <td class="row-label" style="color:#e53935;">Fouls (Total)</td>
+                        <td id="st-p0-fouls">0</td>
+                        <td id="st-p1-fouls">0</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="modal-btn" onclick="document.getElementById('statsModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
+        </div>
+    </div>
+
+    <div class="modal" id="resetModal">
+        <div class="modal-content">
+            <h3>Neues Spiel?</h3>
+            <button class="modal-btn" onclick="confirmReset()" style="background:var(--accent-red); color:white; border:none;">Ja, Alles löschen</button>
+            <button class="modal-btn" onclick="closeModal()" style="background:#444; color:white; border:none;">Abbrechen</button>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let defaultPlayer = { 
+            name: "Spieler", 
+            total: 0, 
+            run: 0, 
+            innings: 0, 
+            highRun: 0,
+            misses: 0, 
+            safeties: 0,
+            fouls: 0,
+            consecutiveFouls: 0
+        };
+
+        let state = {
+            players: [
+                { ...defaultPlayer, name: "Spieler A" },
+                { ...defaultPlayer, name: "Spieler B" }
+            ],
+            activePlayer: 0,
+            target: 100,
+            ballsOnTable: 15
+        };
+
+        let historyStack = [];
+
+        window.onload = function() { loadState(); render(); };
+
+        function pushHistory() {
+            if(historyStack.length > 50) historyStack.shift();
+            historyStack.push(JSON.parse(JSON.stringify(state)));
+        }
+
+        // --- Actions ---
+        
+        function actionPoint() {
+            pushHistory();
+            const p = state.players[state.activePlayer];
+            p.run++; p.total++;
+            if(p.run > p.highRun) p.highRun = p.run;
+            p.consecutiveFouls = 0; 
+            if(state.ballsOnTable > 0) state.ballsOnTable--;
+            saveAndRender();
+        }
+
+        function actionRack() {
+            pushHistory();
+            const p = state.players[state.activePlayer];
+            let pointsToAdd = 0;
+            if(state.ballsOnTable > 1) {
+                pointsToAdd = state.ballsOnTable - 1;
+            }
+            p.total += pointsToAdd;
+            p.run += pointsToAdd;
+            if(p.run > p.highRun) p.highRun = p.run;
+            p.consecutiveFouls = 0; 
+            state.ballsOnTable = 15;
+            saveAndRender();
+        }
+
+        function actionSafety() {
+            pushHistory();
+            state.players[state.activePlayer].safeties++;
+            state.players[state.activePlayer].consecutiveFouls = 0;
+            endInning();
+        }
+
+        function actionMiss() {
+            pushHistory();
+            state.players[state.activePlayer].misses++;
+            state.players[state.activePlayer].consecutiveFouls = 0;
+            endInning();
+        }
+
+        function actionFoul() {
+            pushHistory();
+            const p = state.players[state.activePlayer];
+            p.consecutiveFouls++; 
+            p.fouls++; 
+
+            if (p.consecutiveFouls >= 3) {
+                p.total -= 15;
+                alert(`⚠️ 3. Foul in Folge!\n${p.name} verliert 15 Punkte.\nDie Bälle werden neu aufgebaut.`);
+                p.consecutiveFouls = 0; 
+                state.ballsOnTable = 15; 
+            } else {
+                p.total--; 
+            }
+            endInning();
+        }
+
+        function endInning() {
+            const p = state.players[state.activePlayer];
+            p.innings++; 
+            p.run = 0;
+            switchPlayer();
+            saveAndRender();
+        }
+
+        function actionUndo() {
+            if (historyStack.length === 0) return;
+            state = historyStack.pop();
+            saveAndRender();
+        }
+
+        function switchPlayer() {
+            state.activePlayer = state.activePlayer === 0 ? 1 : 0;
+        }
+
+        function setManualActive(index) {
+            if(state.activePlayer !== index) {
+                pushHistory();
+                state.players[state.activePlayer].run = 0;
+                state.activePlayer = index;
+                saveAndRender();
+            }
+        }
+
+        function saveAndRender() {
+            saveState();
+            render();
+        }
+
+        // --- Calculation & Render ---
+        
+        function calculateStats(p) {
+            let avg = (p.total / (p.innings === 0 && p.total > 0 ? 1 : Math.max(1, p.innings))).toFixed(2);
+            let positivePots = Math.max(0, p.total); 
+            let estimatedPots = positivePots + p.fouls;
+            let attempts = estimatedPots + p.misses + p.fouls; 
+            let pct = attempts === 0 ? 100 : Math.round((estimatedPots / attempts) * 100);
+            return { avg, pct };
+        }
+
+        function render() {
+            const p0 = state.players[0];
+            const p1 = state.players[1];
+            const active = state.activePlayer;
+
+            document.getElementById('balls-display').innerText = `${state.ballsOnTable} Bälle`;
+
+            const rackBtn = document.getElementById('btn-rack');
+            let potentialPoints = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
+            
+            if (potentialPoints > 0) {
+                rackBtn.innerHTML = `+${potentialPoints} <span class="btn-subtext">REST & RACK</span>`;
+                rackBtn.style.backgroundColor = "var(--accent-blue)";
+            } else {
+                rackBtn.innerHTML = `RACK <span class="btn-subtext">Neu aufbauen</span>`;
+                rackBtn.style.backgroundColor = "#555"; 
+            }
+
+            document.getElementById('p0-card').className = `player-card ${active === 0 ? 'active' : ''}`;
+            document.getElementById('p1-card').className = `player-card ${active === 1 ? 'active' : ''}`;
+
+            document.getElementById('p0-foul-warn').style.display = (p0.consecutiveFouls === 2) ? 'block' : 'none';
+            document.getElementById('p1-foul-warn').style.display = (p1.consecutiveFouls === 2) ? 'block' : 'none';
+
+            document.getElementById('p0-total').innerText = p0.total;
+            document.getElementById('p0-run').innerText = p0.run;
+            document.getElementById('p1-total').innerText = p1.total;
+            document.getElementById('p1-run').innerText = p1.run;
+
+            const s0 = calculateStats(p0);
+            const s1 = calculateStats(p1);
+
+            document.getElementById('p0-avg').innerText = s0.avg;
+            document.getElementById('p0-hr').innerText = p0.highRun;
+            document.getElementById('p0-pct').innerText = s0.pct + "%";
+
+            document.getElementById('p1-avg').innerText = s1.avg;
+            document.getElementById('p1-hr').innerText = p1.highRun;
+            document.getElementById('p1-pct').innerText = s1.pct + "%";
+
+            document.getElementById('p0-win').style.display = (p0.total >= state.target) ? 'block' : 'none';
+            document.getElementById('p1-win').style.display = (p1.total >= state.target) ? 'block' : 'none';
+        }
+
+        function openStats() {
+            const p0 = state.players[0];
+            const p1 = state.players[1];
+            const s0 = calculateStats(p0);
+            const s1 = calculateStats(p1);
+
+            document.getElementById('th-p0').innerText = p0.name;
+            document.getElementById('th-p1').innerText = p1.name;
+
+            const fill = (id, val) => document.getElementById(id).innerText = val;
+
+            fill('st-p0-total', p0.total); fill('st-p1-total', p1.total);
+            fill('st-p0-inn', p0.innings); fill('st-p1-inn', p1.innings);
+            fill('st-p0-avg', s0.avg);     fill('st-p1-avg', s1.avg);
+            fill('st-p0-hr', p0.highRun);  fill('st-p1-hr', p1.highRun);
+            fill('st-p0-qt', s0.pct+"%");  fill('st-p1-qt', s1.pct+"%");
+            fill('st-p0-safe', p0.safeties); fill('st-p1-safe', p1.safeties);
+            fill('st-p0-fouls', p0.fouls); fill('st-p1-fouls', p1.fouls);
+
+            document.getElementById('statsModal').style.display = 'flex';
+        }
+
+        function saveState() { localStorage.setItem('141_final_v4', JSON.stringify(state)); }
+        
+        function loadState() {
+            const saved = localStorage.getItem('141_final_v4');
+            if (saved) {
+                try {
+                    let loaded = JSON.parse(saved);
+                    if(typeof loaded.ballsOnTable === 'undefined') loaded.ballsOnTable = 15;
+                    loaded.players.forEach(p => {
+                        if(typeof p.consecutiveFouls === 'undefined') p.consecutiveFouls = 0;
+                        if(typeof p.fouls === 'undefined') p.fouls = 0;
+                    });
+                    state = loaded;
+                    document.getElementById('p0-name').value = state.players[0].name;
+                    document.getElementById('p1-name').value = state.players[1].name;
+                    document.getElementById('targetScore').value = state.target;
+                } catch(e) { console.log("Save file incompatible"); }
+            }
+        }
+
+        function updateSettings() {
+            state.players[0].name = document.getElementById('p0-name').value;
+            state.players[1].name = document.getElementById('p1-name').value;
+            state.target = parseInt(document.getElementById('targetScore').value) || 100;
+            saveAndRender();
+        }
+
+        function resetGame(ask) {
+            if(ask) { document.getElementById('resetModal').style.display = 'flex'; }
+            else {
+                state.players = [ { ...defaultPlayer, name: state.players[0].name }, { ...defaultPlayer, name: state.players[1].name } ];
+                state.activePlayer = 0;
+                state.ballsOnTable = 15;
+                historyStack = [];
+                saveAndRender();
+            }
+        }
+        function confirmReset() { resetGame(false); closeModal(); }
+        function closeModal() { document.getElementById('resetModal').style.display = 'none'; }
+
+        function copyStats() {
+            const p0 = state.players[0];
+            const p1 = state.players[1];
+            const s0 = calculateStats(p0);
+            const s1 = calculateStats(p1);
+            const text = `🎱 14.1\n${p0.name}: ${p0.total} (GD ${s0.avg})\n${p1.name}: ${p1.total} (GD ${s1.avg})`;
+            navigator.clipboard.writeText(text).then(() => alert("Stats kopiert!"));
+        }
+    </script>
+</body>
+</html>
