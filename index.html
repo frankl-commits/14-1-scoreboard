@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>14.1 Scoreboard</title>
+    <title>14.1 Scoreboard - V4.2 Landscape Fix</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -25,21 +24,21 @@
         }
 
         * { box-sizing: border-box; touch-action: manipulation; }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
             padding: 8px;
-            height: 100vh;
+            /* WICHTIG FÜR LANDSCAPE: Erlaubt Scrolling wenn Höhe nicht reicht */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            user-select: none;
+            overflow-x: hidden; /* Nur horizontal scrollen verhindern */
         }
 
-        /* --- UI COMPONENTS --- */
-
+        /* --- TOP BAR --- */
         .top-bar {
             display: flex; justify-content: space-between; align-items: center;
             padding-bottom: 8px; font-size: 0.9rem; min-height: 50px;
@@ -54,22 +53,34 @@
             padding: 8px 12px; border-radius: 6px; font-size: 0.8rem;
         }
 
+        /* --- TABLE STATUS & STATS BUTTON --- */
         .table-status {
-            display: flex; justify-content: center; align-items: center;
-            background: var(--balls-bg); padding: 10px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--balls-bg); padding: 5px 10px; border-radius: 8px;
             margin-bottom: 10px; font-weight: bold; 
-            font-size: 1.4rem; 
+            font-size: 1.3rem; 
             box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
             border: 1px solid #444;
+            min-height: 50px;
         }
+        .ts-info { display: flex; align-items: center; }
         .ball-icon {
             display: inline-block; width: 18px; height: 18px; background: white; 
             border-radius: 50%; margin-right: 10px;
         }
+        /* Der neue Statistik Button oben */
+        .btn-stats-top {
+            background: var(--accent-blue); color: white; border: none;
+            font-size: 0.9rem; padding: 6px 12px; border-radius: 6px;
+            font-weight: bold; display: flex; align-items: center; gap: 5px;
+            cursor: pointer;
+        }
 
-        /* Score Area */
+        /* --- SCOREBOARD --- */
         .scoreboard {
-            display: flex; gap: 8px; flex: 1; max-height: 40vh; margin-bottom: 10px;
+            display: flex; gap: 8px; flex: 1; 
+            /* Flexibel bleiben, kein starres max-height mehr */
+            margin-bottom: 15px;
         }
         .player-card {
             flex: 1; background: var(--card-bg); border-radius: 8px; padding: 8px;
@@ -86,7 +97,7 @@
             margin-bottom: 5px; font-weight: bold; padding: 4px;
         }
         .main-scores {
-            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;
+            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; padding: 10px 0;
         }
         .score-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
         .score-total { font-size: 3.5rem; font-weight: bold; line-height: 1; margin: 2px 0 10px 0; }
@@ -105,7 +116,6 @@
             background: gold; color: black; padding: 2px 6px;
             border-radius: 4px; font-weight: bold; font-size: 0.6rem; z-index: 10;
         }
-        
         .foul-warning {
             display: none; position: absolute; top: 5px; left: 5px;
             background: var(--accent-red); color: white; padding: 2px 6px;
@@ -114,10 +124,23 @@
         }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
+        /* --- CONTROLS --- */
         .controls {
             display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: repeat(3, 1fr);
-            gap: 8px; height: 35vh; 
+            gap: 8px; 
+            /* Fixe Höhe entfernen, lieber min-height für Touch targets */
+            min-height: 300px; 
+            margin-bottom: 20px;
         }
+        
+        /* Landscape Optimization */
+        @media (orientation: landscape) {
+            .controls { min-height: 250px; }
+            .score-total { font-size: 2.5rem; }
+            .scoreboard { margin-bottom: 10px; }
+            body { padding-bottom: 20px; }
+        }
+
         button {
             border: none; border-radius: 6px; color: white; font-size: 1rem; font-weight: bold;
             cursor: pointer; position: relative; overflow: hidden;
@@ -134,23 +157,13 @@
         .btn-safety { background-color: var(--accent-orange); grid-column: 2; grid-row: 3; }
         .btn-undo   { background-color: #444; grid-column: 3; grid-row: 3; }
 
-        .fab-container {
-            position: fixed; bottom: 15px; width: 100%; left: 0;
-            display: flex; justify-content: space-between; padding: 0 15px;
-            pointer-events: none;
-        }
-        .fab {
-            pointer-events: auto; background: #252525; color: white; border: 1px solid #444;
-            width: 45px; height: 45px; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 50;
-        }
-
+        /* --- MODAL --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100;
+            overflow-y: auto; /* Scrollbar im Modal falls nötig */
         }
-        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; text-align: center; width: 90%; max-width: 400px; }
+        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; text-align: center; width: 90%; max-width: 400px; margin: auto;}
         .modal-btn { margin: 10px; padding: 12px 24px; font-size: 1rem; border-radius: 4px; cursor: pointer; width: 100%; }
         
         .stats-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -171,8 +184,13 @@
     </div>
 
     <div class="table-status">
-        <span class="ball-icon"></span>
-        <span id="balls-display">15 Bälle</span>
+        <div class="ts-info">
+            <span class="ball-icon"></span>
+            <span id="balls-display">15 Bälle</span>
+        </div>
+        <button class="btn-stats-top" onclick="openStats()">
+            📊 Stats
+        </button>
     </div>
 
     <div class="scoreboard">
@@ -218,11 +236,6 @@
         <button class="btn-foul" onclick="actionFoul()">FOUL<span class="btn-subtext">-1 Punkt</span></button>
         <button class="btn-safety" onclick="actionSafety()">SAFE<span class="btn-subtext">Wechsel</span></button>
         <button class="btn-undo" onclick="actionUndo()">UNDO</button>
-    </div>
-
-    <div class="fab-container">
-        <button class="fab" onclick="copyStats()" title="Copy Short Stats">📋</button>
-        <button class="fab" onclick="openStats()" style="background:var(--accent-blue); border-color:var(--accent-blue);">📊</button>
     </div>
 
     <div class="modal" id="statsModal">
@@ -500,15 +513,6 @@
         }
         function confirmReset() { resetGame(false); closeModal(); }
         function closeModal() { document.getElementById('resetModal').style.display = 'none'; }
-
-        function copyStats() {
-            const p0 = state.players[0];
-            const p1 = state.players[1];
-            const s0 = calculateStats(p0);
-            const s1 = calculateStats(p1);
-            const text = `🎱 14.1\n${p0.name}: ${p0.total} (GD ${s0.avg})\n${p1.name}: ${p1.total} (GD ${s1.avg})`;
-            navigator.clipboard.writeText(text).then(() => alert("Stats kopiert!"));
-        }
     </script>
 </body>
 </html>
