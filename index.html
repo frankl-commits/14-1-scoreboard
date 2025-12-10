@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V5.1 Smart Input</title>
+    <title>14.1 Scoreboard - V5.2 Auto-Rack</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -325,7 +325,14 @@
             p.run++; p.total++;
             if(p.run > p.highRun) p.highRun = p.run;
             p.consecutiveFouls = 0; 
+            
             if(state.ballsOnTable > 0) state.ballsOnTable--;
+            
+            // AUTO-RACK LOGIC: Wenn nur noch 1 Ball (Breakball) liegt -> Zurück auf 15
+            if(state.ballsOnTable === 1) {
+                state.ballsOnTable = 15;
+            }
+
             saveAndRender();
         }
 
@@ -442,9 +449,15 @@
             p.run += diff;
             p.total += diff;
             if(p.run > p.highRun) p.highRun = p.run;
-            if(diff > 0) p.consecutiveFouls = 0; // Erfolgserlebnis resetet Foul
+            if(diff > 0) p.consecutiveFouls = 0; 
 
             state.ballsOnTable = n;
+            
+            // Auto-Rack im Dialog Check (falls man auf 1 klickt)
+            if(state.ballsOnTable === 1) {
+                state.ballsOnTable = 15;
+            }
+
             document.getElementById('ballModal').style.display = 'none';
             saveAndRender();
         }
@@ -526,10 +539,10 @@
             document.getElementById('statsModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v5_1', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v5_2', JSON.stringify(state)); }
         
         function loadState() {
-            const saved = localStorage.getItem('141_final_v5_1');
+            const saved = localStorage.getItem('141_final_v5_2');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
