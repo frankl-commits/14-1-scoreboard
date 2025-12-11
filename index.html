@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V7.3 Graph Fix</title>
+    <title>14.1 Scoreboard - V8.0 Match Log</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -34,7 +34,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
+            overflow: hidden; /* Kein Scrollen auf Body-Ebene */
         }
 
         /* --- UI COMPONENTS --- */
@@ -102,6 +102,7 @@
         .score-total { font-size: 3.5rem; font-weight: bold; line-height: 1; margin: 2px 0 10px 0; }
         .score-run { font-size: 2rem; color: var(--active-border); font-weight: bold; margin-bottom: 5px; }
 
+        /* STATS GRID (4 Columns) */
         .stats-grid {
             display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; width: 100%; gap: 2px;
             background: #333; padding: 2px; border-radius: 4px; margin-top: auto;
@@ -139,17 +140,15 @@
         .btn-undo  { background-color: #444; grid-column: 3; grid-row: 3; }
         .btn-spacer { background: transparent; grid-column: 2; grid-row: 3; pointer-events: none;}
 
-        /* --- MODALS (UNIFIED WIDTH) --- */
+        /* --- MODALS --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100;
         }
-        /* GRÖSSERE BREITE FÜR ALLE MODALS */
+        /* Maximale Breite für Modals */
         .modal-content { 
             background: var(--card-bg); padding: 15px; border-radius: 8px; text-align: center; 
-            width: 96%; /* Fast ganze Breite */
-            max-width: 600px; /* Limit für Desktop */
-            max-height: 95vh; overflow-y: auto; 
+            width: 96%; max-width: 600px; max-height: 95vh; overflow-y: auto; 
         }
         .modal-btn { margin: 10px; padding: 12px 24px; font-size: 1rem; border-radius: 4px; cursor: pointer; width: 100%; }
 
@@ -170,43 +169,29 @@
         .time-header { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .time-value { font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 15px; }
 
-        /* --- CHART STYLES (NO SCROLLBAR, FLEX FIT) --- */
-        .chart-container {
-            display: flex; height: 200px; align-items: flex-end; gap: 2px; 
-            padding: 10px; background: #252525; border-radius: 6px; margin-bottom: 20px;
-            /* Kein Scrolling, Inhalt passt sich an */
-            overflow: hidden; 
-            justify-content: space-between;
+        /* --- LOG LIST STYLES --- */
+        .log-container {
+            max-height: 60vh; overflow-y: auto; text-align: left;
+            border: 1px solid #333; border-radius: 6px;
         }
-        .chart-bar-group {
-            display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
-            /* Bars shrinken, wenn es viele sind */
-            flex: 1; 
-            position: relative;
+        .log-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-bottom: 1px solid #333; font-size: 0.9rem;
         }
-        .chart-bar {
-            width: 90%; /* Kleiner Abstand */
-            background: #555; border-radius: 2px 2px 0 0;
-            transition: height 0.3s; 
-            /* Min-Height entfernt, 0 ist 0, aber wir markieren es */
-        }
-        /* Indikator für 0-Runs (kleiner roter Strich) */
-        .zero-marker {
-            height: 2px; width: 100%; background: #c62828; margin-bottom: 1px;
-        }
+        .log-row:last-child { border-bottom: none; }
+        .log-time { font-size: 0.7rem; color: #777; width: 50px; }
+        .log-player { font-weight: bold; flex: 1; padding: 0 10px; }
+        .log-result { font-weight: bold; width: 80px; text-align: right; }
         
-        .chart-bar.p0 { background: var(--accent-green); opacity: 0.9; }
-        .chart-bar.p1 { background: var(--accent-blue); opacity: 0.9; }
+        /* Player Colors in Log */
+        .log-p0 { color: var(--accent-green); }
+        .log-p1 { color: var(--accent-blue); }
         
-        /* Zahlen im Balken */
-        .chart-val-inner { 
-            position: absolute; bottom: 5px; width: 100%; text-align: center; 
-            font-size: 0.6rem; color: black; font-weight: bold; pointer-events: none;
-        }
-        /* Tooltip-artige Anzeige oben drüber für sehr hohe Balken */
-        .chart-val-top {
-            font-size: 0.6rem; color: #fff; margin-bottom: 2px;
-        }
+        /* Result Types */
+        .res-safe { color: var(--accent-orange); }
+        .res-foul { color: var(--accent-red); }
+        .res-miss { color: #aaa; }
+        .res-run  { color: white; font-size: 1.1rem; }
 
     </style>
 </head>
@@ -228,7 +213,7 @@
         </div>
         <div class="header-btns">
              <button class="btn-header" onclick="openTimeStats()">⏱ Zeit</button>
-             <button class="btn-header" onclick="openGraph()">📈 Graph</button>
+             <button class="btn-header" onclick="openLog()">📝 Verlauf</button>
              <button class="btn-header" onclick="openStats()" style="background: var(--accent-blue);">📊 Stats</button>
         </div>
     </div>
@@ -323,20 +308,12 @@
         </div>
     </div>
 
-    <div class="modal" id="graphModal">
+    <div class="modal" id="logModal">
         <div class="modal-content">
-            <h3>Match Flow</h3>
-            <p style="color:#aaa; font-size:0.8rem; margin-bottom: 20px;">Run pro Aufnahme</p>
-            
-            <div class="chart-container" id="matchChart"></div>
-            
-            <div style="display:flex; justify-content:center; gap:15px; font-size:0.8rem; margin-bottom:15px;">
-                <span style="color:var(--accent-green)">■ Spieler A</span>
-                <span style="color:var(--accent-blue)">■ Spieler B</span>
-                <span style="color:#c62828">_ 0-Run</span>
-            </div>
-
-            <button class="modal-btn" onclick="document.getElementById('graphModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
+            <h3>Match Verlauf</h3>
+            <div class="log-container" id="matchLog">
+                </div>
+            <button class="modal-btn" onclick="document.getElementById('logModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
         </div>
     </div>
 
@@ -375,7 +352,7 @@
     </div>
 
     <script>
-        // --- Core Functions defined FIRST to avoid ReferenceError ---
+        // --- Core Functions defined FIRST ---
         
         function saveAndRender() {
             saveState();
@@ -389,15 +366,8 @@
 
         // --- State Management ---
         let defaultPlayer = { 
-            name: "Spieler", 
-            total: 0, 
-            run: 0, 
-            innings: 0, 
-            highRun: 0,
-            misses: 0, 
-            safeties: 0,
-            fouls: 0,
-            consecutiveFouls: 0,
+            name: "Spieler", total: 0, run: 0, innings: 0, 
+            highRun: 0, misses: 0, safeties: 0, fouls: 0, consecutiveFouls: 0,
             inningLogs: [] // { duration, run, type, timestamp }
         };
 
@@ -409,9 +379,7 @@
                 { ...defaultPlayer, name: "Spieler A", inningLogs: [] },
                 { ...defaultPlayer, name: "Spieler B", inningLogs: [] }
             ],
-            activePlayer: 0,
-            target: 100,
-            ballsOnTable: 15
+            activePlayer: 0, target: 100, ballsOnTable: 15
         };
 
         let historyStack = [];
@@ -419,17 +387,14 @@
         window.onload = function() { loadState(); render(); };
 
         // --- Actions ---
-        
         function actionPoint() {
             pushHistory();
             const p = state.players[state.activePlayer];
             p.run++; p.total++;
             if(p.run > p.highRun) p.highRun = p.run;
             p.consecutiveFouls = 0; 
-            
             if(state.ballsOnTable > 0) state.ballsOnTable--;
             if(state.ballsOnTable === 1) state.ballsOnTable = 15; 
-
             saveAndRender();
         }
 
@@ -458,28 +423,16 @@
             saveAndRender();
         }
 
-        function actionSafety() {
-            pushHistory();
-            state.players[state.activePlayer].safeties++;
-            state.players[state.activePlayer].consecutiveFouls = 0;
-            endInning('safe');
-        }
-
-        function actionMiss() {
-            pushHistory();
-            state.players[state.activePlayer].misses++;
-            state.players[state.activePlayer].consecutiveFouls = 0;
-            endInning('miss');
-        }
-
+        function actionSafety() { pushHistory(); state.players[state.activePlayer].safeties++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('safe'); }
+        function actionMiss() { pushHistory(); state.players[state.activePlayer].misses++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('miss'); }
+        
         function actionFoul() {
             pushHistory();
             const p = state.players[state.activePlayer];
-            p.consecutiveFouls++; 
-            p.fouls++; 
+            p.consecutiveFouls++; p.fouls++; 
             if (p.consecutiveFouls >= 3) {
                 p.total -= 15;
-                alert(`⚠️ 3. Foul in Folge!\n${p.name} verliert 15 Punkte.\nDie Bälle werden neu aufgebaut.`);
+                alert(`⚠️ 3. Foul!\n${p.name}: -15 Punkte & Re-Rack.`);
                 p.consecutiveFouls = 0; 
                 state.ballsOnTable = 15; 
             } else {
@@ -490,8 +443,6 @@
 
         function endInning(type = 'standard') {
             const p = state.players[state.activePlayer];
-            
-            // TIME LOGIC
             let now = Date.now();
             let durationSec = (now - state.currentInningStart) / 1000;
             
@@ -502,9 +453,7 @@
                 timestamp: now
             });
             state.currentInningStart = now; 
-
-            p.innings++; 
-            p.run = 0;
+            p.innings++; p.run = 0;
             switchPlayer();
             saveAndRender();
         }
@@ -515,10 +464,7 @@
             saveAndRender();
         }
 
-        function switchPlayer() {
-            state.activePlayer = state.activePlayer === 0 ? 1 : 0;
-        }
-
+        function switchPlayer() { state.activePlayer = state.activePlayer === 0 ? 1 : 0; }
         function setManualActive(index) {
             if(state.activePlayer !== index) {
                 pushHistory();
@@ -531,18 +477,13 @@
 
         // --- Dialogs ---
         function openBallSelect() {
-            const grid = document.getElementById('ballGrid');
-            grid.innerHTML = '';
+            const grid = document.getElementById('ballGrid'); grid.innerHTML = '';
             for(let i=0; i<=15; i++) {
                 let btn = document.createElement('button');
-                btn.className = 'ball-btn';
-                btn.innerText = i;
+                btn.className = 'ball-btn'; btn.innerText = i;
                 if(i === state.ballsOnTable) btn.classList.add('current');
-                if(i > state.ballsOnTable) {
-                    btn.classList.add('disabled');
-                } else {
-                    btn.onclick = function() { selectBalls(i); };
-                }
+                if(i > state.ballsOnTable) btn.classList.add('disabled');
+                else btn.onclick = function() { selectBalls(i); };
                 grid.appendChild(btn);
             }
             document.getElementById('ballModal').style.display = 'flex';
@@ -552,8 +493,7 @@
             pushHistory();
             let diff = state.ballsOnTable - n; 
             const p = state.players[state.activePlayer];
-            p.run += diff;
-            p.total += diff;
+            p.run += diff; p.total += diff;
             if(p.run > p.highRun) p.highRun = p.run;
             if(diff > 0) p.consecutiveFouls = 0; 
             state.ballsOnTable = n;
@@ -562,60 +502,39 @@
             saveAndRender();
         }
 
-        // --- GRAPH ENGINE (IMPROVED) ---
-        function openGraph() {
-            const container = document.getElementById('matchChart');
+        // --- NEW: MATCH LOG ---
+        function openLog() {
+            const container = document.getElementById('matchLog');
             container.innerHTML = '';
             
-            let p0Logs = state.players[0].inningLogs.map(l => ({...l, p:0}));
-            let p1Logs = state.players[1].inningLogs.map(l => ({...l, p:1}));
+            let p0Logs = state.players[0].inningLogs.map(l => ({...l, p:0, name: state.players[0].name}));
+            let p1Logs = state.players[1].inningLogs.map(l => ({...l, p:1, name: state.players[1].name}));
             let allLogs = [...p0Logs, ...p1Logs].sort((a,b) => a.timestamp - b.timestamp);
 
             if(allLogs.length === 0) {
-                container.innerHTML = '<div style="width:100%;text-align:center;color:#666;align-self:center;">Noch keine Daten</div>';
+                container.innerHTML = '<div style="padding:20px;text-align:center;color:#666;">Keine Aufnahmen</div>';
             } else {
-                // Find Max Scale
-                let maxRun = 5; 
-                allLogs.forEach(l => { if(l.run > maxRun) maxRun = l.run; });
-
                 allLogs.forEach(log => {
-                    let group = document.createElement('div');
-                    group.className = 'chart-bar-group';
+                    let row = document.createElement('div');
+                    row.className = 'log-row';
                     
-                    if(log.run > 0) {
-                        // Standard Bar
-                        let bar = document.createElement('div');
-                        bar.className = `chart-bar p${log.p}`;
-                        let h = (log.run / maxRun) * 100;
-                        bar.style.height = h + "%";
-                        
-                        // Zahl nur wenn Platz da ist (Run >= 5 oder wenn wenige Balken)
-                        // Vereinfachung: Ab 5 Bällen Zahl rein
-                        if(log.run >= 5) {
-                            let val = document.createElement('div');
-                            val.className = 'chart-val-inner';
-                            val.innerText = log.run;
-                            bar.appendChild(val);
-                        } else {
-                            // Bei kleinen Runs Zahl drüber
-                            let valTop = document.createElement('div');
-                            valTop.className = 'chart-val-top';
-                            valTop.innerText = log.run;
-                            group.appendChild(valTop);
-                        }
-                        group.appendChild(bar);
-                    } else {
-                        // 0 Run Marker
-                        let marker = document.createElement('div');
-                        marker.className = 'zero-marker';
-                        group.appendChild(marker);
-                    }
+                    let timeStr = new Date(log.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                     
-                    container.appendChild(group);
+                    let resHtml = '';
+                    if(log.type === 'foul') resHtml = '<span class="res-foul">-1 (Foul)</span>';
+                    else if(log.type === 'safe') resHtml = '<span class="res-safe">0 (Safe)</span>';
+                    else if(log.type === 'miss') resHtml = '<span class="res-miss">0</span>';
+                    else resHtml = `<span class="res-run">${log.run}</span>`;
+
+                    row.innerHTML = `
+                        <div class="log-time">${timeStr}</div>
+                        <div class="log-player log-p${log.p}">${log.name}</div>
+                        <div class="log-result">${resHtml}</div>
+                    `;
+                    container.appendChild(row);
                 });
             }
-
-            document.getElementById('graphModal').style.display = 'flex';
+            document.getElementById('logModal').style.display = 'flex';
         }
 
         // --- Stats & Helpers ---
@@ -636,30 +555,18 @@
 
         function calculateTimeStats(p) {
             if (p.inningLogs.length === 0) return { avg: "0s", fast: "-", slow: "-", safeAvg: "-", errAvg: "-" };
-
-            let totalDur = 0;
-            let minSecPerBall = Infinity;
-            let maxSecPerBall = 0;
-            
-            let safeSum = 0, safeCount = 0;
-            let errSum = 0, errCount = 0; 
+            let totalDur = 0, minSecPerBall = Infinity, maxSecPerBall = 0;
+            let safeSum = 0, safeCount = 0, errSum = 0, errCount = 0; 
 
             p.inningLogs.forEach(log => {
                 totalDur += log.duration;
-                
                 if (log.run > 0) {
                     let spb = log.duration / log.run;
                     if (spb < minSecPerBall) minSecPerBall = spb;
                     if (spb > maxSecPerBall) maxSecPerBall = spb;
                 }
-
-                if (log.type === 'safe') {
-                    safeSum += log.duration;
-                    safeCount++;
-                } else if (log.type === 'miss' || log.type === 'foul') {
-                    errSum += log.duration;
-                    errCount++;
-                }
+                if (log.type === 'safe') { safeSum += log.duration; safeCount++; }
+                else if (log.type === 'miss' || log.type === 'foul') { errSum += log.duration; errCount++; }
             });
 
             let avg = Math.round(totalDur / p.inningLogs.length) + "s";
@@ -667,68 +574,43 @@
             let slow = maxSecPerBall === 0 ? "-" : Math.round(maxSecPerBall) + "s";
             let safeAvg = safeCount === 0 ? "-" : Math.round(safeSum / safeCount) + "s";
             let errAvg = errCount === 0 ? "-" : Math.round(errSum / errCount) + "s";
-
             return { avg, fast, slow, safeAvg, errAvg };
         }
 
         function render() {
-            const p0 = state.players[0];
-            const p1 = state.players[1];
-            const active = state.activePlayer;
-
-            // Check Game End
-            if ((p0.total >= state.target || p1.total >= state.target) && !state.gameEndTime) {
-                state.gameEndTime = Date.now();
-            } else if (p0.total < state.target && p1.total < state.target) {
-                state.gameEndTime = null; 
-            }
+            const p0 = state.players[0]; const p1 = state.players[1]; const active = state.activePlayer;
+            if ((p0.total >= state.target || p1.total >= state.target) && !state.gameEndTime) state.gameEndTime = Date.now();
+            else if (p0.total < state.target && p1.total < state.target) state.gameEndTime = null;
 
             document.getElementById('balls-display').innerText = `${state.ballsOnTable} Bälle`;
 
             const rackBtn = document.getElementById('btn-rack');
             let potentialPoints = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
-            if (potentialPoints > 0) {
-                rackBtn.innerHTML = `+${potentialPoints} <span class="btn-subtext">REST & RACK</span>`;
-                rackBtn.style.backgroundColor = "var(--accent-blue)";
-            } else {
-                rackBtn.innerHTML = `RACK <span class="btn-subtext">Neu aufbauen</span>`;
-                rackBtn.style.backgroundColor = "#555"; 
-            }
+            if (potentialPoints > 0) { rackBtn.innerHTML = `+${potentialPoints} <span class="btn-subtext">REST & RACK</span>`; rackBtn.style.backgroundColor = "var(--accent-blue)"; }
+            else { rackBtn.innerHTML = `RACK <span class="btn-subtext">Neu aufbauen</span>`; rackBtn.style.backgroundColor = "#555"; }
 
             document.getElementById('p0-card').className = `player-card ${active === 0 ? 'active' : ''}`;
             document.getElementById('p1-card').className = `player-card ${active === 1 ? 'active' : ''}`;
             document.getElementById('p0-foul-warn').style.display = (p0.consecutiveFouls === 2) ? 'block' : 'none';
             document.getElementById('p1-foul-warn').style.display = (p1.consecutiveFouls === 2) ? 'block' : 'none';
 
-            document.getElementById('p0-total').innerText = p0.total;
-            document.getElementById('p0-run').innerText = p0.run;
-            document.getElementById('p1-total').innerText = p1.total;
-            document.getElementById('p1-run').innerText = p1.run;
+            document.getElementById('p0-total').innerText = p0.total; document.getElementById('p0-run').innerText = p0.run;
+            document.getElementById('p1-total').innerText = p1.total; document.getElementById('p1-run').innerText = p1.run;
 
-            const s0 = calculateStats(p0);
-            const s1 = calculateStats(p1);
-
-            document.getElementById('p0-inn').innerText = p0.innings;
-            document.getElementById('p0-avg').innerText = s0.avg;
-            document.getElementById('p0-hr').innerText = p0.highRun;
-            document.getElementById('p0-pct').innerText = s0.pct + "%";
-
-            document.getElementById('p1-inn').innerText = p1.innings;
-            document.getElementById('p1-avg').innerText = s1.avg;
-            document.getElementById('p1-hr').innerText = p1.highRun;
-            document.getElementById('p1-pct').innerText = s1.pct + "%";
+            const s0 = calculateStats(p0); const s1 = calculateStats(p1);
+            document.getElementById('p0-inn').innerText = p0.innings; document.getElementById('p0-avg').innerText = s0.avg;
+            document.getElementById('p0-hr').innerText = p0.highRun; document.getElementById('p0-pct').innerText = s0.pct + "%";
+            document.getElementById('p1-inn').innerText = p1.innings; document.getElementById('p1-avg').innerText = s1.avg;
+            document.getElementById('p1-hr').innerText = p1.highRun; document.getElementById('p1-pct').innerText = s1.pct + "%";
 
             document.getElementById('p0-win').style.display = (p0.total >= state.target) ? 'block' : 'none';
             document.getElementById('p1-win').style.display = (p1.total >= state.target) ? 'block' : 'none';
         }
 
         function openStats() {
-            const p0 = state.players[0];
-            const p1 = state.players[1];
-            const s0 = calculateStats(p0);
-            const s1 = calculateStats(p1);
-            document.getElementById('th-p0').innerText = p0.name;
-            document.getElementById('th-p1').innerText = p1.name;
+            const p0 = state.players[0]; const p1 = state.players[1];
+            const s0 = calculateStats(p0); const s1 = calculateStats(p1);
+            document.getElementById('th-p0').innerText = p0.name; document.getElementById('th-p1').innerText = p1.name;
             const fill = (id, val) => document.getElementById(id).innerText = val;
             fill('st-p0-total', p0.total); fill('st-p1-total', p1.total);
             fill('st-p0-inn', p0.innings); fill('st-p1-inn', p1.innings);
@@ -742,37 +624,23 @@
         }
 
         function openTimeStats() {
-            const p0 = state.players[0];
-            const p1 = state.players[1];
-            const t0 = calculateTimeStats(p0);
-            const t1 = calculateTimeStats(p1);
-
-            document.getElementById('th-p0-t').innerText = p0.name;
-            document.getElementById('th-p1-t').innerText = p1.name;
-
+            const p0 = state.players[0]; const p1 = state.players[1];
+            const t0 = calculateTimeStats(p0); const t1 = calculateTimeStats(p1);
+            document.getElementById('th-p0-t').innerText = p0.name; document.getElementById('th-p1-t').innerText = p1.name;
             document.getElementById('t-start').innerText = formatTime(state.gameStartTime);
             document.getElementById('t-end').innerText = state.gameEndTime ? formatTime(state.gameEndTime) : "läuft...";
-
-            document.getElementById('t-p0-avg').innerText = t0.avg;
-            document.getElementById('t-p1-avg').innerText = t1.avg;
-            
-            document.getElementById('t-p0-safe-avg').innerText = t0.safeAvg;
-            document.getElementById('t-p1-safe-avg').innerText = t1.safeAvg;
-            document.getElementById('t-p0-err-avg').innerText = t0.errAvg;
-            document.getElementById('t-p1-err-avg').innerText = t1.errAvg;
-
-            document.getElementById('t-p0-fast').innerText = t0.fast;
-            document.getElementById('t-p1-fast').innerText = t1.fast;
-            document.getElementById('t-p0-slow').innerText = t0.slow;
-            document.getElementById('t-p1-slow').innerText = t1.slow;
-
+            document.getElementById('t-p0-avg').innerText = t0.avg; document.getElementById('t-p1-avg').innerText = t1.avg;
+            document.getElementById('t-p0-safe-avg').innerText = t0.safeAvg; document.getElementById('t-p1-safe-avg').innerText = t1.safeAvg;
+            document.getElementById('t-p0-err-avg').innerText = t0.errAvg; document.getElementById('t-p1-err-avg').innerText = t1.errAvg;
+            document.getElementById('t-p0-fast').innerText = t0.fast; document.getElementById('t-p1-fast').innerText = t1.fast;
+            document.getElementById('t-p0-slow').innerText = t0.slow; document.getElementById('t-p1-slow').innerText = t1.slow;
             document.getElementById('timeModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v7_3', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v8_0', JSON.stringify(state)); }
         
         function loadState() {
-            const saved = localStorage.getItem('141_final_v7_3');
+            const saved = localStorage.getItem('141_final_v8_0');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
@@ -783,36 +651,24 @@
                         if(!p.inningLogs) p.inningLogs = [];
                         if(typeof p.consecutiveFouls === 'undefined') p.consecutiveFouls = 0;
                     });
-                    
                     state = loaded;
                     document.getElementById('p0-name').value = state.players[0].name;
                     document.getElementById('p1-name').value = state.players[1].name;
                     document.getElementById('targetScore').value = state.target;
-                } catch(e) { console.log("Save file incompatible"); }
+                } catch(e) {}
             }
         }
 
-        function updateSettings() {
-            state.players[0].name = document.getElementById('p0-name').value;
-            state.players[1].name = document.getElementById('p1-name').value;
-            state.target = parseInt(document.getElementById('targetScore').value) || 100;
-            saveAndRender();
-        }
-
+        function updateSettings() { state.players[0].name=document.getElementById('p0-name').value; state.players[1].name=document.getElementById('p1-name').value; state.target=parseInt(document.getElementById('targetScore').value)||100; saveAndRender(); }
+        
         function resetGame(ask) {
-            if(ask) { document.getElementById('resetModal').style.display = 'flex'; }
+            if(ask) document.getElementById('resetModal').style.display = 'flex';
             else {
                 state.players = [ 
                     { ...defaultPlayer, name: state.players[0].name, inningLogs: [] }, 
                     { ...defaultPlayer, name: state.players[1].name, inningLogs: [] } 
                 ];
-                state.activePlayer = 0;
-                state.ballsOnTable = 15;
-                state.gameStartTime = Date.now();
-                state.gameEndTime = null;
-                state.currentInningStart = Date.now();
-                historyStack = [];
-                saveAndRender();
+                state.activePlayer = 0; state.ballsOnTable = 15; state.gameStartTime = Date.now(); state.gameEndTime = null; state.currentInningStart = Date.now(); historyStack = []; saveAndRender();
             }
         }
         function confirmReset() { resetGame(false); closeModal(); }
