@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V7.0 Analyst</title>
+    <title>14.1 Scoreboard - V7.1 Stable</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -21,7 +21,6 @@
             --accent-grey: #616161;
             --active-border: #00e676;
             --balls-bg: #263238;
-            --chart-bar-bg: #333;
         }
 
         * { box-sizing: border-box; touch-action: manipulation; }
@@ -38,7 +37,7 @@
             overflow-x: hidden;
         }
 
-        /* --- TOP BAR --- */
+        /* --- UI COMPONENTS --- */
         .top-bar {
             display: flex; justify-content: space-between; align-items: center;
             padding-bottom: 8px; font-size: 0.9rem; min-height: 50px;
@@ -53,7 +52,6 @@
             padding: 8px 12px; border-radius: 6px; font-size: 0.8rem;
         }
 
-        /* --- TABLE STATUS --- */
         .table-status {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--balls-bg); padding: 5px 10px; border-radius: 8px;
@@ -112,17 +110,8 @@
         .stat-val { font-size: 0.9rem; font-weight: bold; color: white; }
         .stat-lbl { font-size: 0.6rem; color: #aaa; }
 
-        .winner-badge {
-            display: none; position: absolute; top: 5px; right: 5px;
-            background: gold; color: black; padding: 2px 6px;
-            border-radius: 4px; font-weight: bold; font-size: 0.6rem; z-index: 10;
-        }
-        .foul-warning {
-            display: none; position: absolute; top: 5px; left: 5px;
-            background: var(--accent-red); color: white; padding: 2px 6px;
-            border-radius: 4px; font-weight: bold; font-size: 0.7rem; z-index: 10;
-            animation: pulse 1.5s infinite;
-        }
+        .winner-badge { display: none; position: absolute; top: 5px; right: 5px; background: gold; color: black; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.6rem; z-index: 10; }
+        .foul-warning { display: none; position: absolute; top: 5px; left: 5px; background: var(--accent-red); color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.7rem; z-index: 10; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         /* --- CONTROLS --- */
@@ -175,24 +164,30 @@
         .time-header { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .time-value { font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 15px; }
 
-        /* --- CHART STYLES --- */
+        /* --- CHART STYLES (FIXED) --- */
         .chart-container {
-            display: flex; height: 150px; align-items: flex-end; gap: 4px; 
+            display: flex; height: 180px; align-items: flex-end; gap: 6px; 
             padding: 10px; background: #252525; border-radius: 6px; margin-bottom: 20px;
-            overflow-x: auto;
+            overflow-x: auto; /* Allow scrolling */
+            /* Wichtig für Scrolling bei vielen Bars: */
+            justify-content: flex-start; 
         }
         .chart-bar-group {
             display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
-            flex: 1; min-width: 10px;
+            /* Feste Breite für Bars, damit sie nicht verschwinden */
+            flex: 0 0 20px; 
+            min-width: 20px;
         }
         .chart-bar {
             width: 100%; background: #555; border-radius: 2px 2px 0 0;
             transition: height 0.3s; position: relative;
+            /* Minimum height to be visible even if run is 0 */
+            min-height: 4px; 
         }
-        .chart-bar.p0 { background: var(--accent-green); opacity: 0.7; }
-        .chart-bar.p1 { background: var(--accent-blue); opacity: 0.7; }
-        .chart-bar:hover { opacity: 1; }
-        .chart-label { font-size: 0.6rem; color: #888; margin-top: 2px; }
+        .chart-bar.p0 { background: var(--accent-green); opacity: 0.8; }
+        .chart-bar.p1 { background: var(--accent-blue); opacity: 0.8; }
+        .chart-bar:hover { opacity: 1; background: white; }
+        .chart-label { font-size: 0.6rem; color: #fff; margin-top: 2px; }
 
     </style>
 </head>
@@ -213,6 +208,7 @@
             <span class="edit-hint">✎ ändern</span>
         </div>
         <div class="header-btns">
+             <button class="btn-header" onclick="openTimeStats()">⏱ Zeit</button>
              <button class="btn-header" onclick="openGraph()">📈 Graph</button>
              <button class="btn-header" onclick="openStats()" style="background: var(--accent-blue);">📊 Stats</button>
         </div>
@@ -280,34 +276,28 @@
 
     <div class="modal" id="statsModal">
         <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <h3 style="margin:0;">Statistik</h3>
-                <button onclick="openTimeStats()" style="background:#444; border:none; color:#aaa; font-size:0.8rem; padding:5px 10px; border-radius:4px;">⏱ Details</button>
-            </div>
-
+            <h3 style="margin-top:0;">Statistik</h3>
             <table class="stats-table">
-                <thead>
-                    <tr><th style="text-align:left;">Run Verteilung</th><th>A</th><th>B</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td class="row-label" style="color:#777;">&lt; 5 Bälle</td><td id="d-p0-low">0</td><td id="d-p1-low">0</td></tr>
-                    <tr><td class="row-label" style="color:var(--text-color);">5 - 14 Bälle</td><td id="d-p0-mid">0</td><td id="d-p1-mid">0</td></tr>
-                    <tr><td class="row-label" style="color:var(--active-border);">15+ Bälle (Break)</td><td id="d-p0-high">0</td><td id="d-p1-high">0</td></tr>
-                </tbody>
-            </table>
-
-            <h4 style="margin:20px 0 10px 0; color:#aaa; font-size:0.9rem; text-transform:uppercase;">Overview</h4>
-            <table class="stats-table">
-                <thead><tr><th></th><th>A</th><th>B</th></tr></thead>
+                <thead><tr><th>Metric</th><th id="th-p0">A</th><th id="th-p1">B</th></tr></thead>
                 <tbody>
                     <tr><td class="row-label">Punkte</td><td id="st-p0-total" class="highlight">0</td><td id="st-p1-total" class="highlight">0</td></tr>
                     <tr><td class="row-label">Aufnahmen</td><td id="st-p0-inn">0</td><td id="st-p1-inn">0</td></tr>
                     <tr><td class="row-label">GD</td><td id="st-p0-avg">0.0</td><td id="st-p1-avg">0.0</td></tr>
                     <tr><td class="row-label">High Run</td><td id="st-p0-hr">0</td><td id="st-p1-hr">0</td></tr>
                     <tr><td class="row-label">Quote</td><td id="st-p0-qt">100%</td><td id="st-p1-qt">100%</td></tr>
-                    <tr style="border-top: 1px solid #444;"><td class="row-label" style="color:#ef6c00;">Safeties</td><td id="st-p0-safe">0</td><td id="st-p1-safe">0</td></tr>
-                    <tr><td class="row-label" style="color:#aaa;">Miss</td><td id="st-p0-miss">0</td><td id="st-p1-miss">0</td></tr>
-                    <tr><td class="row-label" style="color:#e53935;">Fouls</td><td id="st-p0-fouls">0</td><td id="st-p1-fouls">0</td></tr>
+                    
+                    <tr style="border-top: 1px solid #444;">
+                        <td class="row-label" style="color:#ef6c00;">Safeties</td>
+                        <td id="st-p0-safe">0</td><td id="st-p1-safe">0</td>
+                    </tr>
+                    <tr>
+                        <td class="row-label" style="color:#aaa;">Miss (Fehler)</td>
+                        <td id="st-p0-miss">0</td><td id="st-p1-miss">0</td>
+                    </tr>
+                    <tr>
+                        <td class="row-label" style="color:#e53935;">Fouls</td>
+                        <td id="st-p0-fouls">0</td><td id="st-p1-fouls">0</td>
+                    </tr>
                 </tbody>
             </table>
             <button class="modal-btn" onclick="document.getElementById('statsModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
@@ -321,6 +311,7 @@
             
             <div class="chart-container" id="matchChart">
                 </div>
+            
             <div style="display:flex; justify-content:center; gap:15px; font-size:0.8rem; margin-bottom:15px;">
                 <span style="color:var(--accent-green)">■ Spieler A</span>
                 <span style="color:var(--accent-blue)">■ Spieler B</span>
@@ -333,6 +324,7 @@
     <div class="modal" id="timeModal">
         <div class="modal-content">
             <h3 style="margin-top:0;">⏱ Zeit-Analyse</h3>
+            
             <div class="time-header">Spielstart / Ende</div>
             <div class="time-value"><span id="t-start">-</span> / <span id="t-end">läuft...</span></div>
 
@@ -340,14 +332,22 @@
                 <thead><tr><th>Metrik</th><th id="th-p0-t">A</th><th id="th-p1-t">B</th></tr></thead>
                 <tbody>
                     <tr><td class="row-label">Ø Aufnahme</td><td id="t-p0-avg">0s</td><td id="t-p1-avg">0s</td></tr>
-                    <tr><td class="row-label" style="color:#ef6c00;">Ø Safety</td><td id="t-p0-safe-avg">-</td><td id="t-p1-safe-avg">-</td></tr>
-                    <tr><td class="row-label" style="color:#e53935;">Ø Fehler</td><td id="t-p0-err-avg">-</td><td id="t-p1-err-avg">-</td></tr>
+                    
+                    <tr>
+                         <td class="row-label" style="color:#ef6c00;">Ø Safety</td>
+                         <td id="t-p0-safe-avg">-</td><td id="t-p1-safe-avg">-</td>
+                    </tr>
+                    <tr>
+                         <td class="row-label" style="color:#e53935;">Ø Fehler</td>
+                         <td id="t-p0-err-avg">-</td><td id="t-p1-err-avg">-</td>
+                    </tr>
+
                     <tr style="border-top: 1px solid #444;">
-                        <td class="row-label" style="color:var(--active-border);">Schnellste <span style="font-size:0.6rem;">(Sek/Ball)</span></td>
+                        <td class="row-label" style="color:var(--active-border);">Schnellste<br><span style="font-size:0.6rem; font-weight:normal;">(pro Ball)</span></td>
                         <td id="t-p0-fast">-</td><td id="t-p1-fast">-</td>
                     </tr>
                     <tr>
-                        <td class="row-label" style="color:#757575;">Langsamste <span style="font-size:0.6rem;">(Sek/Ball)</span></td>
+                        <td class="row-label" style="color:#757575;">Langsamste<br><span style="font-size:0.6rem; font-weight:normal;">(pro Ball)</span></td>
                         <td id="t-p0-slow">-</td><td id="t-p1-slow">-</td>
                     </tr>
                 </tbody>
@@ -365,22 +365,42 @@
     </div>
 
     <script>
-        // --- State ---
+        // --- State Management ---
         let defaultPlayer = { 
-            name: "Spieler", total: 0, run: 0, innings: 0, 
-            highRun: 0, misses: 0, safeties: 0, fouls: 0, consecutiveFouls: 0,
+            name: "Spieler", 
+            total: 0, 
+            run: 0, 
+            innings: 0, 
+            highRun: 0,
+            misses: 0, 
+            safeties: 0,
+            fouls: 0,
+            consecutiveFouls: 0,
             inningLogs: [] // { duration, run, type, timestamp }
         };
 
         let state = {
-            gameStartTime: Date.now(), gameEndTime: null, currentInningStart: Date.now(),
-            players: [ { ...defaultPlayer, name: "Spieler A" }, { ...defaultPlayer, name: "Spieler B" } ],
-            activePlayer: 0, target: 100, ballsOnTable: 15
+            gameStartTime: Date.now(),
+            gameEndTime: null,
+            currentInningStart: Date.now(),
+            players: [
+                { ...defaultPlayer, name: "Spieler A", inningLogs: [] },
+                { ...defaultPlayer, name: "Spieler B", inningLogs: [] }
+            ],
+            activePlayer: 0,
+            target: 100,
+            ballsOnTable: 15
         };
 
         let historyStack = [];
 
+        // Global functions defined explicitly to avoid ReferenceError
         window.onload = function() { loadState(); render(); };
+
+        function saveAndRender() {
+            saveState();
+            render();
+        }
 
         function pushHistory() {
             if(historyStack.length > 50) historyStack.shift();
@@ -388,14 +408,17 @@
         }
 
         // --- Actions ---
+        
         function actionPoint() {
             pushHistory();
             const p = state.players[state.activePlayer];
             p.run++; p.total++;
             if(p.run > p.highRun) p.highRun = p.run;
             p.consecutiveFouls = 0; 
+            
             if(state.ballsOnTable > 0) state.ballsOnTable--;
             if(state.ballsOnTable === 1) state.ballsOnTable = 15; 
+
             saveAndRender();
         }
 
@@ -412,32 +435,67 @@
         function actionRack() {
             pushHistory();
             const p = state.players[state.activePlayer];
-            let pointsToAdd = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
-            p.total += pointsToAdd; p.run += pointsToAdd;
+            let pointsToAdd = 0;
+            if(state.ballsOnTable > 1) {
+                pointsToAdd = state.ballsOnTable - 1;
+            }
+            p.total += pointsToAdd;
+            p.run += pointsToAdd;
             if(p.run > p.highRun) p.highRun = p.run;
-            p.consecutiveFouls = 0; state.ballsOnTable = 15;
+            p.consecutiveFouls = 0; 
+            state.ballsOnTable = 15;
             saveAndRender();
         }
 
-        function actionSafety() { pushHistory(); state.players[state.activePlayer].safeties++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('safe'); }
-        function actionMiss() { pushHistory(); state.players[state.activePlayer].misses++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('miss'); }
-        function actionFoul() { 
-            pushHistory(); const p = state.players[state.activePlayer]; 
-            p.consecutiveFouls++; p.fouls++; 
-            if (p.consecutiveFouls >= 3) { p.total -= 15; alert(`⚠️ 3. Foul!\n-15 Punkte & Re-Rack.`); p.consecutiveFouls = 0; state.ballsOnTable = 15; } 
-            else { p.total--; } 
-            endInning('foul'); 
+        function actionSafety() {
+            pushHistory();
+            state.players[state.activePlayer].safeties++;
+            state.players[state.activePlayer].consecutiveFouls = 0;
+            endInning('safe');
+        }
+
+        function actionMiss() {
+            pushHistory();
+            state.players[state.activePlayer].misses++;
+            state.players[state.activePlayer].consecutiveFouls = 0;
+            endInning('miss');
+        }
+
+        function actionFoul() {
+            pushHistory();
+            const p = state.players[state.activePlayer];
+            p.consecutiveFouls++; 
+            p.fouls++; 
+            if (p.consecutiveFouls >= 3) {
+                p.total -= 15;
+                alert(`⚠️ 3. Foul in Folge!\n${p.name} verliert 15 Punkte.\nDie Bälle werden neu aufgebaut.`);
+                p.consecutiveFouls = 0; 
+                state.ballsOnTable = 15; 
+            } else {
+                p.total--; 
+            }
+            endInning('foul');
         }
 
         function endInning(type = 'standard') {
             const p = state.players[state.activePlayer];
+            
+            // TIME LOGIC
             let now = Date.now();
             let durationSec = (now - state.currentInningStart) / 1000;
             
-            p.inningLogs.push({ duration: durationSec, run: p.run, type: type, timestamp: now });
+            p.inningLogs.push({
+                duration: durationSec,
+                run: p.run,
+                type: type,
+                timestamp: now
+            });
             state.currentInningStart = now; 
-            p.innings++; p.run = 0;
-            switchPlayer(); saveAndRender();
+
+            p.innings++; 
+            p.run = 0;
+            switchPlayer();
+            saveAndRender();
         }
 
         function actionUndo() {
@@ -446,21 +504,34 @@
             saveAndRender();
         }
 
-        function switchPlayer() { state.activePlayer = state.activePlayer === 0 ? 1 : 0; }
-        function setManualActive(index) { 
-            if(state.activePlayer !== index) { 
-                pushHistory(); state.currentInningStart = Date.now(); 
-                state.players[state.activePlayer].run = 0; state.activePlayer = index; saveAndRender(); 
-            } 
+        function switchPlayer() {
+            state.activePlayer = state.activePlayer === 0 ? 1 : 0;
+        }
+
+        function setManualActive(index) {
+            if(state.activePlayer !== index) {
+                pushHistory();
+                state.currentInningStart = Date.now(); 
+                state.players[state.activePlayer].run = 0;
+                state.activePlayer = index;
+                saveAndRender();
+            }
         }
 
         // --- Dialogs ---
         function openBallSelect() {
-            const grid = document.getElementById('ballGrid'); grid.innerHTML = '';
+            const grid = document.getElementById('ballGrid');
+            grid.innerHTML = '';
             for(let i=0; i<=15; i++) {
-                let btn = document.createElement('button'); btn.className = 'ball-btn'; btn.innerText = i;
+                let btn = document.createElement('button');
+                btn.className = 'ball-btn';
+                btn.innerText = i;
                 if(i === state.ballsOnTable) btn.classList.add('current');
-                if(i > state.ballsOnTable) btn.classList.add('disabled'); else btn.onclick = function() { selectBalls(i); };
+                if(i > state.ballsOnTable) {
+                    btn.classList.add('disabled');
+                } else {
+                    btn.onclick = function() { selectBalls(i); };
+                }
                 grid.appendChild(btn);
             }
             document.getElementById('ballModal').style.display = 'flex';
@@ -470,11 +541,14 @@
             pushHistory();
             let diff = state.ballsOnTable - n; 
             const p = state.players[state.activePlayer];
-            p.run += diff; p.total += diff;
+            p.run += diff;
+            p.total += diff;
             if(p.run > p.highRun) p.highRun = p.run;
             if(diff > 0) p.consecutiveFouls = 0; 
-            state.ballsOnTable = n; if(state.ballsOnTable === 1) state.ballsOnTable = 15;
-            document.getElementById('ballModal').style.display = 'none'; saveAndRender();
+            state.ballsOnTable = n;
+            if(state.ballsOnTable === 1) state.ballsOnTable = 15;
+            document.getElementById('ballModal').style.display = 'none';
+            saveAndRender();
         }
 
         // --- GRAPH ENGINE ---
@@ -487,34 +561,41 @@
             let p1Logs = state.players[1].inningLogs.map(l => ({...l, p:1}));
             let allLogs = [...p0Logs, ...p1Logs].sort((a,b) => a.timestamp - b.timestamp);
 
-            // Find Max for scaling
-            let maxRun = 10; // min height
-            allLogs.forEach(l => { if(l.run > maxRun) maxRun = l.run; });
+            if(allLogs.length === 0) {
+                container.innerHTML = '<div style="width:100%;text-align:center;color:#666;align-self:center;">Noch keine Daten</div>';
+            } else {
+                // Find Max for scaling
+                let maxRun = 5; // Mindestens 5 anzeigen
+                allLogs.forEach(l => { if(l.run > maxRun) maxRun = l.run; });
 
-            allLogs.forEach(log => {
-                let group = document.createElement('div');
-                group.className = 'chart-bar-group';
-                
-                let bar = document.createElement('div');
-                bar.className = `chart-bar p${log.p}`;
-                // Height percentage (max 100%)
-                let h = (log.run / maxRun) * 100;
-                bar.style.height = Math.max(5, h) + "%"; // min 5% visibility
-                
-                if(log.run > 0) {
-                    let label = document.createElement('span');
-                    label.className = 'chart-label';
-                    label.innerText = log.run;
-                    group.appendChild(label);
-                }
-                
-                group.appendChild(bar);
-                container.appendChild(group);
-            });
+                allLogs.forEach(log => {
+                    let group = document.createElement('div');
+                    group.className = 'chart-bar-group';
+                    
+                    let bar = document.createElement('div');
+                    bar.className = `chart-bar p${log.p}`;
+                    
+                    // Height calculation
+                    let h = (log.run / maxRun) * 100;
+                    bar.style.height = h + "%"; 
+                    
+                    // Label only if > 0
+                    if(log.run > 0) {
+                        let label = document.createElement('span');
+                        label.className = 'chart-label';
+                        label.innerText = log.run;
+                        group.appendChild(label);
+                    }
+                    
+                    group.appendChild(bar);
+                    container.appendChild(group);
+                });
+            }
 
             document.getElementById('graphModal').style.display = 'flex';
         }
 
+        // --- Stats & Helpers ---
         function calculateStats(p) {
             let avg = (p.total / (p.innings === 0 && p.total > 0 ? 1 : Math.max(1, p.innings))).toFixed(2);
             let positivePots = Math.max(0, p.total); 
@@ -524,135 +605,196 @@
             return { avg, pct };
         }
 
-        function calculateRunDist(p) {
-            let low = 0, mid = 0, high = 0;
-            p.inningLogs.forEach(l => {
-                if(l.run > 0 && l.run < 5) low++;
-                else if(l.run >= 5 && l.run < 15) mid++;
-                else if(l.run >= 15) high++;
-            });
-            return { low, mid, high };
+        function formatTime(timestamp) {
+            if(!timestamp) return "-";
+            let d = new Date(timestamp);
+            return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         }
-
-        function formatTime(ts) { if(!ts) return "-"; return new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
 
         function calculateTimeStats(p) {
             if (p.inningLogs.length === 0) return { avg: "0s", fast: "-", slow: "-", safeAvg: "-", errAvg: "-" };
-            let total=0, safeSum=0, safeCnt=0, errSum=0, errCnt=0;
-            let minSpb = Infinity, maxSpb = 0;
+
+            let totalDur = 0;
+            let minSecPerBall = Infinity;
+            let maxSecPerBall = 0;
+            
+            let safeSum = 0, safeCount = 0;
+            let errSum = 0, errCount = 0; 
 
             p.inningLogs.forEach(log => {
-                total += log.duration;
+                totalDur += log.duration;
+                
                 if (log.run > 0) {
                     let spb = log.duration / log.run;
-                    if (spb < minSpb) minSpb = spb;
-                    if (spb > maxSpb) maxSpb = spb;
+                    if (spb < minSecPerBall) minSecPerBall = spb;
+                    if (spb > maxSecPerBall) maxSecPerBall = spb;
                 }
-                if (log.type === 'safe') { safeSum += log.duration; safeCnt++; }
-                else if (log.type === 'miss' || log.type === 'foul') { errSum += log.duration; errCnt++; }
+
+                if (log.type === 'safe') {
+                    safeSum += log.duration;
+                    safeCount++;
+                } else if (log.type === 'miss' || log.type === 'foul') {
+                    errSum += log.duration;
+                    errCount++;
+                }
             });
 
-            return {
-                avg: Math.round(total/p.inningLogs.length) + "s",
-                fast: minSpb===Infinity?"-":Math.round(minSpb)+"s",
-                slow: maxSpb===0?"-":Math.round(maxSpb)+"s",
-                safeAvg: safeCnt===0?"-":Math.round(safeSum/safeCnt)+"s",
-                errAvg: errCnt===0?"-":Math.round(errSum/errCnt)+"s"
-            };
+            let avg = Math.round(totalDur / p.inningLogs.length) + "s";
+            let fast = minSecPerBall === Infinity ? "-" : Math.round(minSecPerBall) + "s";
+            let slow = maxSecPerBall === 0 ? "-" : Math.round(maxSecPerBall) + "s";
+            
+            let safeAvg = safeCount === 0 ? "-" : Math.round(safeSum / safeCount) + "s";
+            let errAvg = errCount === 0 ? "-" : Math.round(errSum / errCount) + "s";
+
+            return { avg, fast, slow, safeAvg, errAvg };
         }
 
         function render() {
-            const p0 = state.players[0]; const p1 = state.players[1]; const active = state.activePlayer;
-            if ((p0.total >= state.target || p1.total >= state.target) && !state.gameEndTime) state.gameEndTime = Date.now();
-            else if (p0.total < state.target && p1.total < state.target) state.gameEndTime = null;
+            const p0 = state.players[0];
+            const p1 = state.players[1];
+            const active = state.activePlayer;
+
+            // Check Game End
+            if ((p0.total >= state.target || p1.total >= state.target) && !state.gameEndTime) {
+                state.gameEndTime = Date.now();
+            } else if (p0.total < state.target && p1.total < state.target) {
+                state.gameEndTime = null; 
+            }
 
             document.getElementById('balls-display').innerText = `${state.ballsOnTable} Bälle`;
-            
-            // Rack Button
-            const rackBtn = document.getElementById('btn-rack');
-            let potPts = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
-            if (potPts > 0) { rackBtn.innerHTML = `+${potPts} <span class="btn-subtext">REST & RACK</span>`; rackBtn.style.backgroundColor = "var(--accent-blue)"; } 
-            else { rackBtn.innerHTML = `RACK <span class="btn-subtext">Neu aufbauen</span>`; rackBtn.style.backgroundColor = "#555"; }
 
-            // Cards & Warnings
+            const rackBtn = document.getElementById('btn-rack');
+            let potentialPoints = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
+            if (potentialPoints > 0) {
+                rackBtn.innerHTML = `+${potentialPoints} <span class="btn-subtext">REST & RACK</span>`;
+                rackBtn.style.backgroundColor = "var(--accent-blue)";
+            } else {
+                rackBtn.innerHTML = `RACK <span class="btn-subtext">Neu aufbauen</span>`;
+                rackBtn.style.backgroundColor = "#555"; 
+            }
+
             document.getElementById('p0-card').className = `player-card ${active === 0 ? 'active' : ''}`;
             document.getElementById('p1-card').className = `player-card ${active === 1 ? 'active' : ''}`;
             document.getElementById('p0-foul-warn').style.display = (p0.consecutiveFouls === 2) ? 'block' : 'none';
             document.getElementById('p1-foul-warn').style.display = (p1.consecutiveFouls === 2) ? 'block' : 'none';
+
+            document.getElementById('p0-total').innerText = p0.total;
+            document.getElementById('p0-run').innerText = p0.run;
+            document.getElementById('p1-total').innerText = p1.total;
+            document.getElementById('p1-run').innerText = p1.run;
+
+            const s0 = calculateStats(p0);
+            const s1 = calculateStats(p1);
+
+            document.getElementById('p0-inn').innerText = p0.innings;
+            document.getElementById('p0-avg').innerText = s0.avg;
+            document.getElementById('p0-hr').innerText = p0.highRun;
+            document.getElementById('p0-pct').innerText = s0.pct + "%";
+
+            document.getElementById('p1-inn').innerText = p1.innings;
+            document.getElementById('p1-avg').innerText = s1.avg;
+            document.getElementById('p1-hr').innerText = p1.highRun;
+            document.getElementById('p1-pct').innerText = s1.pct + "%";
+
             document.getElementById('p0-win').style.display = (p0.total >= state.target) ? 'block' : 'none';
             document.getElementById('p1-win').style.display = (p1.total >= state.target) ? 'block' : 'none';
-
-            // Scores
-            document.getElementById('p0-total').innerText = p0.total; document.getElementById('p0-run').innerText = p0.run;
-            document.getElementById('p1-total').innerText = p1.total; document.getElementById('p1-run').innerText = p1.run;
-
-            // Mini Stats
-            const s0 = calculateStats(p0); const s1 = calculateStats(p1);
-            document.getElementById('p0-inn').innerText = p0.innings; document.getElementById('p0-avg').innerText = s0.avg;
-            document.getElementById('p0-hr').innerText = p0.highRun; document.getElementById('p0-pct').innerText = s0.pct + "%";
-            document.getElementById('p1-inn').innerText = p1.innings; document.getElementById('p1-avg').innerText = s1.avg;
-            document.getElementById('p1-hr').innerText = p1.highRun; document.getElementById('p1-pct').innerText = s1.pct + "%";
         }
 
         function openStats() {
-            const p0 = state.players[0]; const p1 = state.players[1];
-            const s0 = calculateStats(p0); const s1 = calculateStats(p1);
-            const d0 = calculateRunDist(p0); const d1 = calculateRunDist(p1);
-
-            // Fill General Stats
-            document.getElementById('st-p0-total').innerText = p0.total; document.getElementById('st-p1-total').innerText = p1.total;
-            document.getElementById('st-p0-inn').innerText = p0.innings; document.getElementById('st-p1-inn').innerText = p1.innings;
-            document.getElementById('st-p0-avg').innerText = s0.avg; document.getElementById('st-p1-avg').innerText = s1.avg;
-            document.getElementById('st-p0-hr').innerText = p0.highRun; document.getElementById('st-p1-hr').innerText = p1.highRun;
-            document.getElementById('st-p0-qt').innerText = s0.pct+"%"; document.getElementById('st-p1-qt').innerText = s1.pct+"%";
-            document.getElementById('st-p0-safe').innerText = p0.safeties; document.getElementById('st-p1-safe').innerText = p1.safeties;
-            document.getElementById('st-p0-miss').innerText = p0.misses; document.getElementById('st-p1-miss').innerText = p1.misses;
-            document.getElementById('st-p0-fouls').innerText = p0.fouls; document.getElementById('st-p1-fouls').innerText = p1.fouls;
-
-            // Fill Distribution
-            document.getElementById('d-p0-low').innerText = d0.low; document.getElementById('d-p1-low').innerText = d1.low;
-            document.getElementById('d-p0-mid').innerText = d0.mid; document.getElementById('d-p1-mid').innerText = d1.mid;
-            document.getElementById('d-p0-high').innerText = d0.high; document.getElementById('d-p1-high').innerText = d1.high;
-
+            const p0 = state.players[0];
+            const p1 = state.players[1];
+            const s0 = calculateStats(p0);
+            const s1 = calculateStats(p1);
+            document.getElementById('th-p0').innerText = p0.name;
+            document.getElementById('th-p1').innerText = p1.name;
+            const fill = (id, val) => document.getElementById(id).innerText = val;
+            fill('st-p0-total', p0.total); fill('st-p1-total', p1.total);
+            fill('st-p0-inn', p0.innings); fill('st-p1-inn', p1.innings);
+            fill('st-p0-avg', s0.avg);     fill('st-p1-avg', s1.avg);
+            fill('st-p0-hr', p0.highRun);  fill('st-p1-hr', p1.highRun);
+            fill('st-p0-qt', s0.pct+"%");  fill('st-p1-qt', s1.pct+"%");
+            fill('st-p0-safe', p0.safeties); fill('st-p1-safe', p1.safeties);
+            fill('st-p0-miss', p0.misses); fill('st-p1-miss', p1.misses);
+            fill('st-p0-fouls', p0.fouls); fill('st-p1-fouls', p1.fouls);
             document.getElementById('statsModal').style.display = 'flex';
         }
 
         function openTimeStats() {
-            const t0 = calculateTimeStats(state.players[0]); const t1 = calculateTimeStats(state.players[1]);
-            document.getElementById('th-p0-t').innerText = state.players[0].name; document.getElementById('th-p1-t').innerText = state.players[1].name;
+            const p0 = state.players[0];
+            const p1 = state.players[1];
+            const t0 = calculateTimeStats(p0);
+            const t1 = calculateTimeStats(p1);
+
+            document.getElementById('th-p0-t').innerText = p0.name;
+            document.getElementById('th-p1-t').innerText = p1.name;
+
             document.getElementById('t-start').innerText = formatTime(state.gameStartTime);
             document.getElementById('t-end').innerText = state.gameEndTime ? formatTime(state.gameEndTime) : "läuft...";
+
+            document.getElementById('t-p0-avg').innerText = t0.avg;
+            document.getElementById('t-p1-avg').innerText = t1.avg;
             
-            document.getElementById('t-p0-avg').innerText = t0.avg; document.getElementById('t-p1-avg').innerText = t1.avg;
-            document.getElementById('t-p0-safe-avg').innerText = t0.safeAvg; document.getElementById('t-p1-safe-avg').innerText = t1.safeAvg;
-            document.getElementById('t-p0-err-avg').innerText = t0.errAvg; document.getElementById('t-p1-err-avg').innerText = t1.errAvg;
-            document.getElementById('t-p0-fast').innerText = t0.fast; document.getElementById('t-p1-fast').innerText = t1.fast;
-            document.getElementById('t-p0-slow').innerText = t0.slow; document.getElementById('t-p1-slow').innerText = t1.slow;
-            
+            document.getElementById('t-p0-safe-avg').innerText = t0.safeAvg;
+            document.getElementById('t-p1-safe-avg').innerText = t1.safeAvg;
+            document.getElementById('t-p0-err-avg').innerText = t0.errAvg;
+            document.getElementById('t-p1-err-avg').innerText = t1.errAvg;
+
+            document.getElementById('t-p0-fast').innerText = t0.fast;
+            document.getElementById('t-p1-fast').innerText = t1.fast;
+            document.getElementById('t-p0-slow').innerText = t0.slow;
+            document.getElementById('t-p1-slow').innerText = t1.slow;
+
             document.getElementById('timeModal').style.display = 'flex';
         }
 
-        function saveAndRender() { saveState(); render(); }
-        function saveState() { localStorage.setItem('141_v7_analyst', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v7_1', JSON.stringify(state)); }
+        
         function loadState() {
-            const saved = localStorage.getItem('141_v7_analyst');
+            const saved = localStorage.getItem('141_final_v7_1');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
-                    // Migrations
                     if(typeof loaded.ballsOnTable === 'undefined') loaded.ballsOnTable = 15;
-                    loaded.players.forEach(p => { if(!p.inningLogs) p.inningLogs = []; });
+                    if(!loaded.gameStartTime) loaded.gameStartTime = Date.now();
+                    if(!loaded.currentInningStart) loaded.currentInningStart = Date.now();
+                    loaded.players.forEach(p => {
+                        if(!p.inningLogs) p.inningLogs = [];
+                        if(typeof p.consecutiveFouls === 'undefined') p.consecutiveFouls = 0;
+                    });
+                    
                     state = loaded;
                     document.getElementById('p0-name').value = state.players[0].name;
                     document.getElementById('p1-name').value = state.players[1].name;
                     document.getElementById('targetScore').value = state.target;
-                } catch(e) {}
+                } catch(e) { console.log("Save file incompatible"); }
             }
         }
-        function updateSettings() { state.players[0].name=document.getElementById('p0-name').value; state.players[1].name=document.getElementById('p1-name').value; state.target=parseInt(document.getElementById('targetScore').value)||100; saveAndRender(); }
-        function resetGame(ask) { if(ask) document.getElementById('resetModal').style.display='flex'; else { state.players=[{...defaultPlayer, name:state.players[0].name},{...defaultPlayer, name:state.players[1].name}]; state.activePlayer=0; state.ballsOnTable=15; state.gameStartTime=Date.now(); state.gameEndTime=null; state.currentInningStart=Date.now(); historyStack=[]; saveAndRender(); } }
+
+        function updateSettings() {
+            state.players[0].name = document.getElementById('p0-name').value;
+            state.players[1].name = document.getElementById('p1-name').value;
+            state.target = parseInt(document.getElementById('targetScore').value) || 100;
+            saveAndRender();
+        }
+
+        function resetGame(ask) {
+            if(ask) { document.getElementById('resetModal').style.display = 'flex'; }
+            else {
+                state.players = [ 
+                    { ...defaultPlayer, name: state.players[0].name, inningLogs: [] }, 
+                    { ...defaultPlayer, name: state.players[1].name, inningLogs: [] } 
+                ];
+                state.activePlayer = 0;
+                state.ballsOnTable = 15;
+                state.gameStartTime = Date.now();
+                state.gameEndTime = null;
+                state.currentInningStart = Date.now();
+                historyStack = [];
+                saveAndRender();
+            }
+        }
         function confirmReset() { resetGame(false); closeModal(); }
-        function closeModal() { document.getElementById('resetModal').style.display='none'; }
+        function closeModal() { document.getElementById('resetModal').style.display = 'none'; }
     </script>
 </body>
 </html>
