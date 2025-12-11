@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V7.2 Stable Fix</title>
+    <title>14.1 Scoreboard - V7.3 Graph Fix</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -102,7 +102,6 @@
         .score-total { font-size: 3.5rem; font-weight: bold; line-height: 1; margin: 2px 0 10px 0; }
         .score-run { font-size: 2rem; color: var(--active-border); font-weight: bold; margin-bottom: 5px; }
 
-        /* STATS GRID (4 Columns) */
         .stats-grid {
             display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; width: 100%; gap: 2px;
             background: #333; padding: 2px; border-radius: 4px; margin-top: auto;
@@ -140,12 +139,18 @@
         .btn-undo  { background-color: #444; grid-column: 3; grid-row: 3; }
         .btn-spacer { background: transparent; grid-column: 2; grid-row: 3; pointer-events: none;}
 
-        /* --- MODALS --- */
+        /* --- MODALS (UNIFIED WIDTH) --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100;
         }
-        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 8px; text-align: center; width: 95%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
+        /* GRÖSSERE BREITE FÜR ALLE MODALS */
+        .modal-content { 
+            background: var(--card-bg); padding: 15px; border-radius: 8px; text-align: center; 
+            width: 96%; /* Fast ganze Breite */
+            max-width: 600px; /* Limit für Desktop */
+            max-height: 95vh; overflow-y: auto; 
+        }
         .modal-btn { margin: 10px; padding: 12px 24px; font-size: 1rem; border-radius: 4px; cursor: pointer; width: 100%; }
 
         .ball-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
@@ -165,27 +170,43 @@
         .time-header { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .time-value { font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 15px; }
 
-        /* --- CHART STYLES --- */
+        /* --- CHART STYLES (NO SCROLLBAR, FLEX FIT) --- */
         .chart-container {
-            display: flex; height: 180px; align-items: flex-end; gap: 4px; 
+            display: flex; height: 200px; align-items: flex-end; gap: 2px; 
             padding: 10px; background: #252525; border-radius: 6px; margin-bottom: 20px;
-            overflow-x: auto;
-            justify-content: flex-start;
+            /* Kein Scrolling, Inhalt passt sich an */
+            overflow: hidden; 
+            justify-content: space-between;
         }
         .chart-bar-group {
             display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
-            flex: 0 0 15px; /* Fixierte Breite */
-            min-width: 15px;
+            /* Bars shrinken, wenn es viele sind */
+            flex: 1; 
+            position: relative;
         }
         .chart-bar {
-            width: 100%; background: #555; border-radius: 2px 2px 0 0;
-            transition: height 0.3s; position: relative;
-            min-height: 4px; /* Immer sichtbar */
+            width: 90%; /* Kleiner Abstand */
+            background: #555; border-radius: 2px 2px 0 0;
+            transition: height 0.3s; 
+            /* Min-Height entfernt, 0 ist 0, aber wir markieren es */
         }
-        .chart-bar.p0 { background: var(--accent-green); opacity: 0.8; }
-        .chart-bar.p1 { background: var(--accent-blue); opacity: 0.8; }
-        .chart-bar:hover { opacity: 1; background: white; }
-        .chart-label { font-size: 0.5rem; color: #fff; margin-top: 2px; }
+        /* Indikator für 0-Runs (kleiner roter Strich) */
+        .zero-marker {
+            height: 2px; width: 100%; background: #c62828; margin-bottom: 1px;
+        }
+        
+        .chart-bar.p0 { background: var(--accent-green); opacity: 0.9; }
+        .chart-bar.p1 { background: var(--accent-blue); opacity: 0.9; }
+        
+        /* Zahlen im Balken */
+        .chart-val-inner { 
+            position: absolute; bottom: 5px; width: 100%; text-align: center; 
+            font-size: 0.6rem; color: black; font-weight: bold; pointer-events: none;
+        }
+        /* Tooltip-artige Anzeige oben drüber für sehr hohe Balken */
+        .chart-val-top {
+            font-size: 0.6rem; color: #fff; margin-bottom: 2px;
+        }
 
     </style>
 </head>
@@ -303,15 +324,16 @@
     </div>
 
     <div class="modal" id="graphModal">
-        <div class="modal-content" style="max-width:95%;">
+        <div class="modal-content">
             <h3>Match Flow</h3>
-            <p style="color:#aaa; font-size:0.8rem;">Run pro Aufnahme</p>
+            <p style="color:#aaa; font-size:0.8rem; margin-bottom: 20px;">Run pro Aufnahme</p>
             
             <div class="chart-container" id="matchChart"></div>
             
             <div style="display:flex; justify-content:center; gap:15px; font-size:0.8rem; margin-bottom:15px;">
                 <span style="color:var(--accent-green)">■ Spieler A</span>
                 <span style="color:var(--accent-blue)">■ Spieler B</span>
+                <span style="color:#c62828">_ 0-Run</span>
             </div>
 
             <button class="modal-btn" onclick="document.getElementById('graphModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
@@ -469,6 +491,7 @@
         function endInning(type = 'standard') {
             const p = state.players[state.activePlayer];
             
+            // TIME LOGIC
             let now = Date.now();
             let durationSec = (now - state.currentInningStart) / 1000;
             
@@ -539,7 +562,7 @@
             saveAndRender();
         }
 
-        // --- GRAPH ENGINE (FIXED) ---
+        // --- GRAPH ENGINE (IMPROVED) ---
         function openGraph() {
             const container = document.getElementById('matchChart');
             container.innerHTML = '';
@@ -551,7 +574,7 @@
             if(allLogs.length === 0) {
                 container.innerHTML = '<div style="width:100%;text-align:center;color:#666;align-self:center;">Noch keine Daten</div>';
             } else {
-                // Find Max
+                // Find Max Scale
                 let maxRun = 5; 
                 allLogs.forEach(l => { if(l.run > maxRun) maxRun = l.run; });
 
@@ -559,21 +582,35 @@
                     let group = document.createElement('div');
                     group.className = 'chart-bar-group';
                     
-                    let bar = document.createElement('div');
-                    bar.className = `chart-bar p${log.p}`;
-                    
-                    // Height calc
-                    let h = (log.run / maxRun) * 100;
-                    bar.style.height = Math.max(5, h) + "%"; // min 5% visual
-                    
                     if(log.run > 0) {
-                        let label = document.createElement('span');
-                        label.className = 'chart-label';
-                        label.innerText = log.run;
-                        group.appendChild(label);
+                        // Standard Bar
+                        let bar = document.createElement('div');
+                        bar.className = `chart-bar p${log.p}`;
+                        let h = (log.run / maxRun) * 100;
+                        bar.style.height = h + "%";
+                        
+                        // Zahl nur wenn Platz da ist (Run >= 5 oder wenn wenige Balken)
+                        // Vereinfachung: Ab 5 Bällen Zahl rein
+                        if(log.run >= 5) {
+                            let val = document.createElement('div');
+                            val.className = 'chart-val-inner';
+                            val.innerText = log.run;
+                            bar.appendChild(val);
+                        } else {
+                            // Bei kleinen Runs Zahl drüber
+                            let valTop = document.createElement('div');
+                            valTop.className = 'chart-val-top';
+                            valTop.innerText = log.run;
+                            group.appendChild(valTop);
+                        }
+                        group.appendChild(bar);
+                    } else {
+                        // 0 Run Marker
+                        let marker = document.createElement('div');
+                        marker.className = 'zero-marker';
+                        group.appendChild(marker);
                     }
                     
-                    group.appendChild(bar);
                     container.appendChild(group);
                 });
             }
@@ -732,10 +769,10 @@
             document.getElementById('timeModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v7_2', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v7_3', JSON.stringify(state)); }
         
         function loadState() {
-            const saved = localStorage.getItem('141_final_v7_2');
+            const saved = localStorage.getItem('141_final_v7_3');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
