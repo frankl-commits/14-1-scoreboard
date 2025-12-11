@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V8.0 Match Log</title>
+    <title>14.1 Scoreboard - V9.0 Final Log</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -34,7 +34,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Kein Scrollen auf Body-Ebene */
+            overflow: hidden;
         }
 
         /* --- UI COMPONENTS --- */
@@ -69,7 +69,8 @@
             display: inline-block; width: 18px; height: 18px; background: white; 
             border-radius: 50%; margin-right: 10px;
         }
-        .edit-hint { font-size: 0.8rem; color: #888; margin-left: auto; margin-right: 10px; font-weight: normal; }
+        /* Hint linksbündig neben den Bällen */
+        .edit-hint { font-size: 0.8rem; color: #888; margin-left: 15px; font-weight: normal; }
         
         .header-btns { display: flex; gap: 8px; }
         .btn-header {
@@ -102,7 +103,6 @@
         .score-total { font-size: 3.5rem; font-weight: bold; line-height: 1; margin: 2px 0 10px 0; }
         .score-run { font-size: 2rem; color: var(--active-border); font-weight: bold; margin-bottom: 5px; }
 
-        /* STATS GRID (4 Columns) */
         .stats-grid {
             display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; width: 100%; gap: 2px;
             background: #333; padding: 2px; border-radius: 4px; margin-top: auto;
@@ -129,6 +129,7 @@
             text-align: center;
         }
         button:active { filter: brightness(0.8); transform: scale(0.98); }
+        button:disabled { opacity: 0.3; filter: grayscale(100%); cursor: not-allowed; } /* Disabled Style */
         .btn-subtext { font-size: 0.6rem; font-weight: normal; opacity: 0.8; margin-top: 2px; }
 
         .btn-point { grid-column: 1 / span 2; grid-row: 1; background-color: var(--accent-green); font-size: 3.5rem; }
@@ -145,10 +146,9 @@
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 100;
         }
-        /* Maximale Breite für Modals */
         .modal-content { 
             background: var(--card-bg); padding: 15px; border-radius: 8px; text-align: center; 
-            width: 96%; max-width: 600px; max-height: 95vh; overflow-y: auto; 
+            width: 98%; max-width: 650px; max-height: 95vh; overflow-y: auto; 
         }
         .modal-btn { margin: 10px; padding: 12px 24px; font-size: 1rem; border-radius: 4px; cursor: pointer; width: 100%; }
 
@@ -169,29 +169,35 @@
         .time-header { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .time-value { font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 15px; }
 
-        /* --- LOG LIST STYLES --- */
-        .log-container {
-            max-height: 60vh; overflow-y: auto; text-align: left;
+        /* --- 5-COLUMN LOG TABLE --- */
+        .log-table-container {
+            max-height: 70vh; overflow-y: auto; 
             border: 1px solid #333; border-radius: 6px;
         }
-        .log-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px; border-bottom: 1px solid #333; font-size: 0.9rem;
+        .log-table {
+            width: 100%; border-collapse: collapse; font-size: 0.85rem;
         }
-        .log-row:last-child { border-bottom: none; }
-        .log-time { font-size: 0.7rem; color: #777; width: 50px; }
-        .log-player { font-weight: bold; flex: 1; padding: 0 10px; }
-        .log-result { font-weight: bold; width: 80px; text-align: right; }
+        .log-table th {
+            background: #252525; color: #aaa; padding: 8px 2px; 
+            text-align: center; font-weight: normal; font-size: 0.7rem;
+            position: sticky; top: 0; z-index: 2; border-bottom: 1px solid #444;
+        }
+        .log-table td {
+            padding: 8px 2px; border-bottom: 1px solid #333; text-align: center; vertical-align: middle;
+        }
+        /* Spaltenbreiten */
+        .col-nr { width: 30px; color: #666; font-size: 0.7rem; }
+        .col-name { width: 25%; font-weight: bold; } /* Run/Ergebnis Header ist jetzt Name */
+        .col-sum { width: 15%; font-weight: bold; background: #222; border-left: 1px solid #333; }
         
-        /* Player Colors in Log */
-        .log-p0 { color: var(--accent-green); }
-        .log-p1 { color: var(--accent-blue); }
+        /* Inhalte */
+        .res-run { color: #fff; font-weight: bold; font-size: 1rem; }
+        .res-safe { color: var(--accent-orange); font-size: 0.7rem; font-weight: bold; }
+        .res-foul { color: var(--accent-red); font-weight: bold; }
+        .res-miss { color: #777; font-size: 0.7rem; }
+        .sum-val  { color: var(--active-border); font-size: 0.9rem; }
         
-        /* Result Types */
-        .res-safe { color: var(--accent-orange); }
-        .res-foul { color: var(--accent-red); }
-        .res-miss { color: #aaa; }
-        .res-run  { color: white; font-size: 1.1rem; }
+        .empty-cell { background: #181818; }
 
     </style>
 </head>
@@ -257,7 +263,7 @@
     </div>
 
     <div class="controls">
-        <button class="btn-point" onclick="actionPoint()">+1</button>
+        <button class="btn-point" id="btn-pt" onclick="actionPoint()">+1</button>
         <button class="btn-rack" id="btn-rack" onclick="actionRack()">+14<span class="btn-subtext">RACK</span></button>
         
         <button class="btn-minus" onclick="actionMinusOne()">-1</button>
@@ -289,19 +295,9 @@
                     <tr><td class="row-label">GD</td><td id="st-p0-avg">0.0</td><td id="st-p1-avg">0.0</td></tr>
                     <tr><td class="row-label">High Run</td><td id="st-p0-hr">0</td><td id="st-p1-hr">0</td></tr>
                     <tr><td class="row-label">Quote</td><td id="st-p0-qt">100%</td><td id="st-p1-qt">100%</td></tr>
-                    
-                    <tr style="border-top: 1px solid #444;">
-                        <td class="row-label" style="color:#ef6c00;">Safeties</td>
-                        <td id="st-p0-safe">0</td><td id="st-p1-safe">0</td>
-                    </tr>
-                    <tr>
-                        <td class="row-label" style="color:#aaa;">Miss (Fehler)</td>
-                        <td id="st-p0-miss">0</td><td id="st-p1-miss">0</td>
-                    </tr>
-                    <tr>
-                        <td class="row-label" style="color:#e53935;">Fouls</td>
-                        <td id="st-p0-fouls">0</td><td id="st-p1-fouls">0</td>
-                    </tr>
+                    <tr style="border-top: 1px solid #444;"><td class="row-label" style="color:#ef6c00;">Safeties</td><td id="st-p0-safe">0</td><td id="st-p1-safe">0</td></tr>
+                    <tr><td class="row-label" style="color:#aaa;">Miss (Fehler)</td><td id="st-p0-miss">0</td><td id="st-p1-miss">0</td></tr>
+                    <tr><td class="row-label" style="color:#e53935;">Fouls</td><td id="st-p0-fouls">0</td><td id="st-p1-fouls">0</td></tr>
                 </tbody>
             </table>
             <button class="modal-btn" onclick="document.getElementById('statsModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
@@ -311,8 +307,20 @@
     <div class="modal" id="logModal">
         <div class="modal-content">
             <h3>Match Verlauf</h3>
-            <div class="log-container" id="matchLog">
-                </div>
+            <div class="log-table-container">
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th class="col-nr">#</th>
+                            <th class="col-name" id="log-th-p0">A</th>
+                            <th class="col-sum">∑</th>
+                            <th class="col-name" id="log-th-p1">B</th>
+                            <th class="col-sum">∑</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logBody"></tbody>
+                </table>
+            </div>
             <button class="modal-btn" onclick="document.getElementById('logModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
         </div>
     </div>
@@ -322,7 +330,6 @@
             <h3 style="margin-top:0;">⏱ Zeit-Analyse</h3>
             <div class="time-header">Spielstart / Ende</div>
             <div class="time-value"><span id="t-start">-</span> / <span id="t-end">läuft...</span></div>
-
             <table class="stats-table">
                 <thead><tr><th>Metrik</th><th id="th-p0-t">A</th><th id="th-p1-t">B</th></tr></thead>
                 <tbody>
@@ -352,33 +359,20 @@
     </div>
 
     <script>
-        // --- Core Functions defined FIRST ---
-        
-        function saveAndRender() {
-            saveState();
-            render();
-        }
-
-        function pushHistory() {
-            if(historyStack.length > 50) historyStack.shift();
-            historyStack.push(JSON.parse(JSON.stringify(state)));
-        }
+        // --- Core Functions ---
+        function saveAndRender() { saveState(); render(); }
+        function pushHistory() { if(historyStack.length > 50) historyStack.shift(); historyStack.push(JSON.parse(JSON.stringify(state))); }
 
         // --- State Management ---
         let defaultPlayer = { 
             name: "Spieler", total: 0, run: 0, innings: 0, 
             highRun: 0, misses: 0, safeties: 0, fouls: 0, consecutiveFouls: 0,
-            inningLogs: [] // { duration, run, type, timestamp }
+            inningLogs: [] 
         };
 
         let state = {
-            gameStartTime: Date.now(),
-            gameEndTime: null,
-            currentInningStart: Date.now(),
-            players: [
-                { ...defaultPlayer, name: "Spieler A", inningLogs: [] },
-                { ...defaultPlayer, name: "Spieler B", inningLogs: [] }
-            ],
+            gameStartTime: Date.now(), gameEndTime: null, currentInningStart: Date.now(),
+            players: [ { ...defaultPlayer, name: "Spieler A", inningLogs: [] }, { ...defaultPlayer, name: "Spieler B", inningLogs: [] } ],
             activePlayer: 0, target: 100, ballsOnTable: 15
         };
 
@@ -386,8 +380,13 @@
 
         window.onload = function() { loadState(); render(); };
 
+        function isGameOver() {
+            return (state.players[0].total >= state.target || state.players[1].total >= state.target);
+        }
+
         // --- Actions ---
         function actionPoint() {
+            if(isGameOver()) return;
             pushHistory();
             const p = state.players[state.activePlayer];
             p.run++; p.total++;
@@ -401,89 +400,65 @@
         function actionMinusOne() {
             const p = state.players[state.activePlayer];
             if(p.run > 0) {
-                pushHistory();
-                p.run--; p.total--;
+                pushHistory(); p.run--; p.total--;
                 if(state.ballsOnTable < 15) state.ballsOnTable++;
                 saveAndRender();
             }
         }
 
         function actionRack() {
+            if(isGameOver()) return;
             pushHistory();
             const p = state.players[state.activePlayer];
-            let pointsToAdd = 0;
-            if(state.ballsOnTable > 1) {
-                pointsToAdd = state.ballsOnTable - 1;
-            }
-            p.total += pointsToAdd;
-            p.run += pointsToAdd;
+            let pointsToAdd = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
+            p.total += pointsToAdd; p.run += pointsToAdd;
             if(p.run > p.highRun) p.highRun = p.run;
-            p.consecutiveFouls = 0; 
-            state.ballsOnTable = 15;
+            p.consecutiveFouls = 0; state.ballsOnTable = 15;
             saveAndRender();
         }
 
-        function actionSafety() { pushHistory(); state.players[state.activePlayer].safeties++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('safe'); }
-        function actionMiss() { pushHistory(); state.players[state.activePlayer].misses++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('miss'); }
+        function actionSafety() { pushHistory(); state.players[state.activePlayer].safeties++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('safe', 0); }
+        function actionMiss() { pushHistory(); state.players[state.activePlayer].misses++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('miss', 0); }
         
-        function actionFoul() {
-            pushHistory();
-            const p = state.players[state.activePlayer];
+        function actionFoul() { 
+            pushHistory(); const p = state.players[state.activePlayer]; 
             p.consecutiveFouls++; p.fouls++; 
-            if (p.consecutiveFouls >= 3) {
-                p.total -= 15;
-                alert(`⚠️ 3. Foul!\n${p.name}: -15 Punkte & Re-Rack.`);
-                p.consecutiveFouls = 0; 
-                state.ballsOnTable = 15; 
-            } else {
-                p.total--; 
-            }
-            endInning('foul');
+            let deduction = -1;
+            if (p.consecutiveFouls >= 3) { 
+                p.total -= 15; deduction = -15;
+                alert(`⚠️ 3. Foul!\n-15 Punkte & Re-Rack.`); 
+                p.consecutiveFouls = 0; state.ballsOnTable = 15; 
+            } else { p.total--; } 
+            endInning('foul', deduction); 
         }
 
-        function endInning(type = 'standard') {
+        function endInning(type = 'standard', manualDelta = null) {
             const p = state.players[state.activePlayer];
             let now = Date.now();
             let durationSec = (now - state.currentInningStart) / 1000;
             
-            p.inningLogs.push({
-                duration: durationSec,
-                run: p.run,
-                type: type,
-                timestamp: now
-            });
+            // Logic: Delta is the Run unless it's a foul
+            let delta = p.run; 
+            if(type === 'foul') delta = manualDelta;
+
+            p.inningLogs.push({ duration: durationSec, run: p.run, type: type, timestamp: now, scoreDelta: delta });
             state.currentInningStart = now; 
             p.innings++; p.run = 0;
-            switchPlayer();
-            saveAndRender();
+            switchPlayer(); saveAndRender();
         }
 
-        function actionUndo() {
-            if (historyStack.length === 0) return;
-            state = historyStack.pop();
-            saveAndRender();
-        }
-
+        function actionUndo() { if (historyStack.length === 0) return; state = historyStack.pop(); saveAndRender(); }
         function switchPlayer() { state.activePlayer = state.activePlayer === 0 ? 1 : 0; }
-        function setManualActive(index) {
-            if(state.activePlayer !== index) {
-                pushHistory();
-                state.currentInningStart = Date.now(); 
-                state.players[state.activePlayer].run = 0;
-                state.activePlayer = index;
-                saveAndRender();
-            }
-        }
+        function setManualActive(index) { if(state.activePlayer !== index) { pushHistory(); state.currentInningStart = Date.now(); state.players[state.activePlayer].run = 0; state.activePlayer = index; saveAndRender(); } }
 
         // --- Dialogs ---
         function openBallSelect() {
+            if(isGameOver()) return;
             const grid = document.getElementById('ballGrid'); grid.innerHTML = '';
             for(let i=0; i<=15; i++) {
-                let btn = document.createElement('button');
-                btn.className = 'ball-btn'; btn.innerText = i;
+                let btn = document.createElement('button'); btn.className = 'ball-btn'; btn.innerText = i;
                 if(i === state.ballsOnTable) btn.classList.add('current');
-                if(i > state.ballsOnTable) btn.classList.add('disabled');
-                else btn.onclick = function() { selectBalls(i); };
+                if(i > state.ballsOnTable) btn.classList.add('disabled'); else btn.onclick = function() { selectBalls(i); };
                 grid.appendChild(btn);
             }
             document.getElementById('ballModal').style.display = 'flex';
@@ -496,99 +471,136 @@
             p.run += diff; p.total += diff;
             if(p.run > p.highRun) p.highRun = p.run;
             if(diff > 0) p.consecutiveFouls = 0; 
-            state.ballsOnTable = n;
-            if(state.ballsOnTable === 1) state.ballsOnTable = 15;
-            document.getElementById('ballModal').style.display = 'none';
-            saveAndRender();
+            state.ballsOnTable = n; if(state.ballsOnTable === 1) state.ballsOnTable = 15;
+            document.getElementById('ballModal').style.display = 'none'; saveAndRender();
         }
 
-        // --- NEW: MATCH LOG ---
+        // --- LOGIC: CHRONOLOGICAL LOG ---
         function openLog() {
-            const container = document.getElementById('matchLog');
-            container.innerHTML = '';
+            const tbody = document.getElementById('logBody');
+            tbody.innerHTML = '';
             
-            let p0Logs = state.players[0].inningLogs.map(l => ({...l, p:0, name: state.players[0].name}));
-            let p1Logs = state.players[1].inningLogs.map(l => ({...l, p:1, name: state.players[1].name}));
-            let allLogs = [...p0Logs, ...p1Logs].sort((a,b) => a.timestamp - b.timestamp);
+            // Set Headers
+            document.getElementById('log-th-p0').innerText = state.players[0].name.substring(0,8);
+            document.getElementById('log-th-p1').innerText = state.players[1].name.substring(0,8);
 
-            if(allLogs.length === 0) {
-                container.innerHTML = '<div style="padding:20px;text-align:center;color:#666;">Keine Aufnahmen</div>';
-            } else {
-                allLogs.forEach(log => {
-                    let row = document.createElement('div');
-                    row.className = 'log-row';
-                    
-                    let timeStr = new Date(log.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                    
-                    let resHtml = '';
-                    if(log.type === 'foul') resHtml = '<span class="res-foul">-1 (Foul)</span>';
-                    else if(log.type === 'safe') resHtml = '<span class="res-safe">0 (Safe)</span>';
-                    else if(log.type === 'miss') resHtml = '<span class="res-miss">0</span>';
-                    else resHtml = `<span class="res-run">${log.run}</span>`;
+            let maxInnings = Math.max(state.players[0].innings, state.players[1].innings);
+            
+            // Calculate accumulating Totals from scratch based on logs to be accurate
+            let totalA = 0;
+            let totalB = 0;
 
-                    row.innerHTML = `
-                        <div class="log-time">${timeStr}</div>
-                        <div class="log-player log-p${log.p}">${log.name}</div>
-                        <div class="log-result">${resHtml}</div>
-                    `;
-                    container.appendChild(row);
-                });
+            for (let i = 0; i < maxInnings; i++) {
+                let logA = state.players[0].inningLogs[i];
+                let logB = state.players[1].inningLogs[i];
+                let tr = document.createElement('tr');
+
+                // Render Cell A
+                let cellResA = "", cellSumA = "";
+                if(logA) {
+                    let d = (logA.scoreDelta !== undefined) ? logA.scoreDelta : (logA.type==='foul'?-1:logA.run);
+                    totalA += d;
+                    
+                    if(logA.type==='foul') cellResA = `<span class="res-foul">-1 (F)</span>`;
+                    else if(logA.type==='safe') cellResA = '<span class="res-safe">0 (S)</span>';
+                    else if(logA.type==='miss') cellResA = '<span class="res-miss">0</span>';
+                    else cellResA = `<span class="res-run">${logA.run}</span>`;
+                    
+                    cellSumA = `<span class="sum-val">${totalA}</span>`;
+                }
+
+                // Render Cell B
+                let cellResB = "", cellSumB = "";
+                if(logB) {
+                    let d = (logB.scoreDelta !== undefined) ? logB.scoreDelta : (logB.type==='foul'?-1:logB.run);
+                    totalB += d;
+
+                    if(logB.type==='foul') cellResB = `<span class="res-foul">-1 (F)</span>`;
+                    else if(logB.type==='safe') cellResB = '<span class="res-safe">0 (S)</span>';
+                    else if(logB.type==='miss') cellResB = '<span class="res-miss">0</span>';
+                    else cellResB = `<span class="res-run">${logB.run}</span>`;
+                    
+                    cellSumB = `<span class="sum-val">${totalB}</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="col-nr">${i + 1}</td>
+                    <td class="${!logA ? 'empty-cell' : ''}">${cellResA}</td>
+                    <td class="col-sum ${!logA ? 'empty-cell' : ''}">${cellSumA}</td>
+                    <td class="${!logB ? 'empty-cell' : ''}">${cellResB}</td>
+                    <td class="col-sum ${!logB ? 'empty-cell' : ''}">${cellSumB}</td>
+                `;
+                tbody.appendChild(tr);
             }
+            
             document.getElementById('logModal').style.display = 'flex';
         }
 
-        // --- Stats & Helpers ---
+        // --- Helpers & Render ---
         function calculateStats(p) {
             let avg = (p.total / (p.innings === 0 && p.total > 0 ? 1 : Math.max(1, p.innings))).toFixed(2);
             let positivePots = Math.max(0, p.total); 
-            let estimatedPots = positivePots + p.fouls;
+            let estimatedPots = positivePots + p.fouls; // approximation
             let attempts = estimatedPots + p.misses + p.fouls; 
             let pct = attempts === 0 ? 100 : Math.round((estimatedPots / attempts) * 100);
             return { avg, pct };
         }
 
-        function formatTime(timestamp) {
-            if(!timestamp) return "-";
-            let d = new Date(timestamp);
-            return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }
+        function formatTime(ts) { if(!ts) return "-"; return new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
 
         function calculateTimeStats(p) {
             if (p.inningLogs.length === 0) return { avg: "0s", fast: "-", slow: "-", safeAvg: "-", errAvg: "-" };
-            let totalDur = 0, minSecPerBall = Infinity, maxSecPerBall = 0;
-            let safeSum = 0, safeCount = 0, errSum = 0, errCount = 0; 
-
+            let total=0, safeSum=0, safeCnt=0, errSum=0, errCnt=0;
+            let minSpb = Infinity, maxSpb = 0;
             p.inningLogs.forEach(log => {
-                totalDur += log.duration;
+                total += log.duration;
                 if (log.run > 0) {
                     let spb = log.duration / log.run;
-                    if (spb < minSecPerBall) minSecPerBall = spb;
-                    if (spb > maxSecPerBall) maxSecPerBall = spb;
+                    if (spb < minSpb) minSpb = spb;
+                    if (spb > maxSpb) maxSpb = spb;
                 }
-                if (log.type === 'safe') { safeSum += log.duration; safeCount++; }
-                else if (log.type === 'miss' || log.type === 'foul') { errSum += log.duration; errCount++; }
+                if (log.type === 'safe') { safeSum += log.duration; safeCnt++; }
+                else if (log.type === 'miss' || log.type === 'foul') { errSum += log.duration; errCnt++; }
             });
-
-            let avg = Math.round(totalDur / p.inningLogs.length) + "s";
-            let fast = minSecPerBall === Infinity ? "-" : Math.round(minSecPerBall) + "s";
-            let slow = maxSecPerBall === 0 ? "-" : Math.round(maxSecPerBall) + "s";
-            let safeAvg = safeCount === 0 ? "-" : Math.round(safeSum / safeCount) + "s";
-            let errAvg = errCount === 0 ? "-" : Math.round(errSum / errCount) + "s";
-            return { avg, fast, slow, safeAvg, errAvg };
+            return {
+                avg: Math.round(total/p.inningLogs.length) + "s",
+                fast: minSpb===Infinity?"-":Math.round(minSpb)+"s",
+                slow: maxSpb===0?"-":Math.round(maxSpb)+"s",
+                safeAvg: safeCnt===0?"-":Math.round(safeSum/safeCnt)+"s",
+                errAvg: errCnt===0?"-":Math.round(errSum/errCnt)+"s"
+            };
         }
 
         function render() {
             const p0 = state.players[0]; const p1 = state.players[1]; const active = state.activePlayer;
-            if ((p0.total >= state.target || p1.total >= state.target) && !state.gameEndTime) state.gameEndTime = Date.now();
-            else if (p0.total < state.target && p1.total < state.target) state.gameEndTime = null;
+            const finished = isGameOver();
+            
+            if (finished && !state.gameEndTime) state.gameEndTime = Date.now();
+            else if (!finished) state.gameEndTime = null;
+
+            // Lock controls visually
+            const btnPt = document.getElementById('btn-pt');
+            const btnRack = document.getElementById('btn-rack');
+            if(finished) {
+                btnPt.disabled = true; btnRack.disabled = true;
+                btnRack.style.backgroundColor = "#555";
+                btnPt.style.backgroundColor = "#555";
+            } else {
+                btnPt.disabled = false; btnRack.disabled = false;
+                btnPt.style.backgroundColor = "var(--accent-green)";
+                
+                let potPts = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
+                if (potPts > 0) { 
+                    btnRack.innerHTML = `+${potPts} <span class="btn-subtext">REST & RACK</span>`; 
+                    btnRack.style.backgroundColor = "var(--accent-blue)"; 
+                } else { 
+                    btnRack.innerHTML = `RACK <span class="btn-subtext">Neu aufbauen</span>`; 
+                    btnRack.style.backgroundColor = "#555"; 
+                }
+            }
 
             document.getElementById('balls-display').innerText = `${state.ballsOnTable} Bälle`;
-
-            const rackBtn = document.getElementById('btn-rack');
-            let potentialPoints = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
-            if (potentialPoints > 0) { rackBtn.innerHTML = `+${potentialPoints} <span class="btn-subtext">REST & RACK</span>`; rackBtn.style.backgroundColor = "var(--accent-blue)"; }
-            else { rackBtn.innerHTML = `RACK <span class="btn-subtext">Neu aufbauen</span>`; rackBtn.style.backgroundColor = "#555"; }
-
+            
             document.getElementById('p0-card').className = `player-card ${active === 0 ? 'active' : ''}`;
             document.getElementById('p1-card').className = `player-card ${active === 1 ? 'active' : ''}`;
             document.getElementById('p0-foul-warn').style.display = (p0.consecutiveFouls === 2) ? 'block' : 'none';
@@ -637,20 +649,14 @@
             document.getElementById('timeModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v8_0', JSON.stringify(state)); }
-        
+        function saveState() { localStorage.setItem('141_final_v9_0', JSON.stringify(state)); }
         function loadState() {
-            const saved = localStorage.getItem('141_final_v8_0');
+            const saved = localStorage.getItem('141_final_v9_0');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
                     if(typeof loaded.ballsOnTable === 'undefined') loaded.ballsOnTable = 15;
-                    if(!loaded.gameStartTime) loaded.gameStartTime = Date.now();
-                    if(!loaded.currentInningStart) loaded.currentInningStart = Date.now();
-                    loaded.players.forEach(p => {
-                        if(!p.inningLogs) p.inningLogs = [];
-                        if(typeof p.consecutiveFouls === 'undefined') p.consecutiveFouls = 0;
-                    });
+                    loaded.players.forEach(p => { if(!p.inningLogs) p.inningLogs = []; });
                     state = loaded;
                     document.getElementById('p0-name').value = state.players[0].name;
                     document.getElementById('p1-name').value = state.players[1].name;
@@ -658,18 +664,11 @@
                 } catch(e) {}
             }
         }
-
         function updateSettings() { state.players[0].name=document.getElementById('p0-name').value; state.players[1].name=document.getElementById('p1-name').value; state.target=parseInt(document.getElementById('targetScore').value)||100; saveAndRender(); }
         
         function resetGame(ask) {
             if(ask) document.getElementById('resetModal').style.display = 'flex';
-            else {
-                state.players = [ 
-                    { ...defaultPlayer, name: state.players[0].name, inningLogs: [] }, 
-                    { ...defaultPlayer, name: state.players[1].name, inningLogs: [] } 
-                ];
-                state.activePlayer = 0; state.ballsOnTable = 15; state.gameStartTime = Date.now(); state.gameEndTime = null; state.currentInningStart = Date.now(); historyStack = []; saveAndRender();
-            }
+            else { state.players = [ { ...defaultPlayer, name: state.players[0].name, inningLogs: [] }, { ...defaultPlayer, name: state.players[1].name, inningLogs: [] } ]; state.activePlayer = 0; state.ballsOnTable = 15; state.gameStartTime = Date.now(); state.gameEndTime = null; state.currentInningStart = Date.now(); historyStack = []; saveAndRender(); }
         }
         function confirmReset() { resetGame(false); closeModal(); }
         function closeModal() { document.getElementById('resetModal').style.display = 'none'; }
