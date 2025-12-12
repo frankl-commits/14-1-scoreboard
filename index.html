@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V9.0 Final Log</title>
+    <title>14.1 Scoreboard - V11.0 Banker</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -19,6 +20,7 @@
             --accent-blue: #1565c0;
             --accent-orange: #ef6c00;
             --accent-grey: #616161;
+            --accent-purple: #5e35b1; /* Banker Color */
             --active-border: #00e676;
             --balls-bg: #263238;
         }
@@ -30,11 +32,12 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 8px;
+            padding: 10px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow-y: auto; 
+            overflow-x: hidden;
         }
 
         /* --- UI COMPONENTS --- */
@@ -53,35 +56,24 @@
         }
 
         .table-status {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: center; align-items: center;
             background: var(--balls-bg); padding: 5px 10px; border-radius: 8px;
-            margin-bottom: 10px; font-weight: bold; 
-            font-size: 1.3rem; 
+            margin-bottom: 15px; 
             box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
             border: 1px solid #444;
-            min-height: 50px;
-            cursor: pointer; 
+            min-height: 45px;
         }
-        .table-status:active { background: #37474f; }
         
-        .ts-info { display: flex; align-items: center; flex: 1; }
-        .ball-icon {
-            display: inline-block; width: 18px; height: 18px; background: white; 
-            border-radius: 50%; margin-right: 10px;
-        }
-        /* Hint linksbündig neben den Bällen */
-        .edit-hint { font-size: 0.8rem; color: #888; margin-left: 15px; font-weight: normal; }
-        
-        .header-btns { display: flex; gap: 8px; }
+        .header-btns { display: flex; gap: 10px; width: 100%; justify-content: space-between; }
         .btn-header {
             background: #444; color: white; border: none;
-            font-size: 0.8rem; padding: 6px 10px; border-radius: 6px;
-            font-weight: bold; display: flex; align-items: center; gap: 5px;
-            cursor: pointer;
+            font-size: 0.85rem; padding: 8px 5px; border-radius: 6px;
+            font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px;
+            cursor: pointer; flex: 1; 
         }
 
         /* --- SCOREBOARD --- */
-        .scoreboard { display: flex; gap: 8px; flex: 1; margin-bottom: 15px; }
+        .scoreboard { display: flex; gap: 8px; flex: 1; margin-bottom: 20px; min-height: 220px; }
         .player-card {
             flex: 1; background: var(--card-bg); border-radius: 8px; padding: 8px;
             display: flex; flex-direction: column; align-items: center;
@@ -97,7 +89,7 @@
             margin-bottom: 5px; font-weight: bold; padding: 4px;
         }
         .main-scores {
-            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; padding: 10px 0;
+            flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; padding: 5px 0;
         }
         .score-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
         .score-total { font-size: 3.5rem; font-weight: bold; line-height: 1; margin: 2px 0 10px 0; }
@@ -108,8 +100,8 @@
             background: #333; padding: 2px; border-radius: 4px; margin-top: auto;
         }
         .stat-box { background: var(--card-bg); text-align: center; padding: 4px 0; }
-        .stat-val { font-size: 0.9rem; font-weight: bold; color: white; }
-        .stat-lbl { font-size: 0.6rem; color: #aaa; }
+        .stat-val { font-size: 0.8rem; font-weight: bold; color: white; }
+        .stat-lbl { font-size: 0.55rem; color: #aaa; }
 
         .winner-badge { display: none; position: absolute; top: 5px; right: 5px; background: gold; color: black; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.6rem; z-index: 10; }
         .foul-warning { display: none; position: absolute; top: 5px; left: 5px; background: var(--accent-red); color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.7rem; z-index: 10; animation: pulse 1.5s infinite; }
@@ -117,29 +109,39 @@
 
         /* --- CONTROLS --- */
         .controls {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1.5fr 1fr 1fr;
-            gap: 8px; min-height: 300px; margin-bottom: 20px;
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            grid-template-rows: 1fr 1fr 1fr; 
+            gap: 10px; 
+            min-height: 280px; 
+            margin-bottom: 20px;
         }
-        @media (orientation: landscape) { .controls { min-height: 250px; } }
 
         button {
-            border: none; border-radius: 6px; color: white; font-size: 1rem; font-weight: bold;
+            border: none; border-radius: 8px; color: white; font-size: 1rem; font-weight: bold;
             cursor: pointer; position: relative; overflow: hidden;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
             text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        button:active { filter: brightness(0.8); transform: scale(0.98); }
-        button:disabled { opacity: 0.3; filter: grayscale(100%); cursor: not-allowed; } /* Disabled Style */
-        .btn-subtext { font-size: 0.6rem; font-weight: normal; opacity: 0.8; margin-top: 2px; }
+        button:active { filter: brightness(0.8); transform: translateY(2px); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        button:disabled { opacity: 0.3; filter: grayscale(100%); cursor: not-allowed; } 
+        .btn-subtext { font-size: 0.65rem; font-weight: normal; opacity: 0.8; margin-top: 4px; display:block; }
 
-        .btn-point { grid-column: 1 / span 2; grid-row: 1; background-color: var(--accent-green); font-size: 3.5rem; }
+        /* Button Positions */
+        .btn-point { background-color: var(--accent-green); font-size: 2.5rem; grid-column: 1; grid-row: 1; }
+        .btn-balls { background-color: #455a64; grid-column: 2; grid-row: 1; font-size: 1.2rem; border: 2px solid #555; }
         .btn-rack  { background-color: var(--accent-blue); grid-column: 3; grid-row: 1; }
+        
         .btn-minus { background-color: #d84315; grid-column: 1; grid-row: 2; font-size: 1.5rem; }
         .btn-safe  { background-color: var(--accent-orange); grid-column: 2; grid-row: 2; }
         .btn-miss  { background-color: var(--accent-grey); grid-column: 3; grid-row: 2; border-left: 4px solid #aaa;}
+        
         .btn-foul  { background-color: var(--accent-red); grid-column: 1; grid-row: 3; }
-        .btn-undo  { background-color: #444; grid-column: 3; grid-row: 3; }
-        .btn-spacer { background: transparent; grid-column: 2; grid-row: 3; pointer-events: none;}
+        /* Undo in the middle */
+        .btn-undo  { background-color: #444; grid-column: 2; grid-row: 3; font-size: 1.2rem; }
+        /* Banker button new position */
+        .btn-banker { background-color: var(--accent-purple); grid-column: 3; grid-row: 3; border-left: 4px solid #9575cd; }
 
         /* --- MODALS --- */
         .modal {
@@ -148,7 +150,7 @@
         }
         .modal-content { 
             background: var(--card-bg); padding: 15px; border-radius: 8px; text-align: center; 
-            width: 98%; max-width: 650px; max-height: 95vh; overflow-y: auto; 
+            width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto; 
         }
         .modal-btn { margin: 10px; padding: 12px 24px; font-size: 1rem; border-radius: 4px; cursor: pointer; width: 100%; }
 
@@ -169,34 +171,27 @@
         .time-header { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .time-value { font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 15px; }
 
-        /* --- 5-COLUMN LOG TABLE --- */
+        /* --- LOG TABLE --- */
         .log-table-container {
-            max-height: 70vh; overflow-y: auto; 
+            max-height: 60vh; overflow-y: auto; 
             border: 1px solid #333; border-radius: 6px;
         }
-        .log-table {
-            width: 100%; border-collapse: collapse; font-size: 0.85rem;
-        }
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .log-table th {
             background: #252525; color: #aaa; padding: 8px 2px; 
             text-align: center; font-weight: normal; font-size: 0.7rem;
             position: sticky; top: 0; z-index: 2; border-bottom: 1px solid #444;
         }
-        .log-table td {
-            padding: 8px 2px; border-bottom: 1px solid #333; text-align: center; vertical-align: middle;
-        }
-        /* Spaltenbreiten */
-        .col-nr { width: 30px; color: #666; font-size: 0.7rem; }
-        .col-name { width: 25%; font-weight: bold; } /* Run/Ergebnis Header ist jetzt Name */
-        .col-sum { width: 15%; font-weight: bold; background: #222; border-left: 1px solid #333; }
-        
-        /* Inhalte */
-        .res-run { color: #fff; font-weight: bold; font-size: 1rem; }
-        .res-safe { color: var(--accent-orange); font-size: 0.7rem; font-weight: bold; }
+        .log-table td { padding: 8px 2px; border-bottom: 1px solid #333; text-align: center; vertical-align: middle; }
+        .col-nr { width: 10%; color: #666; font-size: 0.7rem; }
+        .col-name { width: 25%; font-weight: bold; font-size:0.9rem;} 
+        .col-sum { width: 15%; font-weight: bold; background: #222; border-left: 1px solid #333; color: var(--active-border); }
+        .res-run { color: #fff; font-weight: bold; font-size: 1.1rem; }
+        .res-safe { color: var(--accent-orange); font-size: 0.8rem; }
         .res-foul { color: var(--accent-red); font-weight: bold; }
-        .res-miss { color: #777; font-size: 0.7rem; }
+        .res-miss { color: #777; font-size: 0.8rem; }
+        .res-bank { color: var(--accent-purple); font-size: 0.8rem; font-weight: bold; }
         .sum-val  { color: var(--active-border); font-size: 0.9rem; }
-        
         .empty-cell { background: #181818; }
 
     </style>
@@ -212,11 +207,6 @@
     </div>
 
     <div class="table-status">
-        <div class="ts-info" onclick="openBallSelect()">
-            <span class="ball-icon"></span>
-            <span id="balls-display">15 Bälle</span>
-            <span class="edit-hint">✎ ändern</span>
-        </div>
         <div class="header-btns">
              <button class="btn-header" onclick="openTimeStats()">⏱ Zeit</button>
              <button class="btn-header" onclick="openLog()">📝 Verlauf</button>
@@ -264,6 +254,7 @@
 
     <div class="controls">
         <button class="btn-point" id="btn-pt" onclick="actionPoint()">+1</button>
+        <button class="btn-balls" id="btn-balls" onclick="openBallSelect()">15 Bälle<span class="btn-subtext">✎</span></button>
         <button class="btn-rack" id="btn-rack" onclick="actionRack()">+14<span class="btn-subtext">RACK</span></button>
         
         <button class="btn-minus" onclick="actionMinusOne()">-1</button>
@@ -271,8 +262,8 @@
         <button class="btn-miss" onclick="actionMiss()">MISS<span class="btn-subtext">Wechsel</span></button>
 
         <button class="btn-foul" onclick="actionFoul()">FOUL<span class="btn-subtext">-1 Punkt</span></button>
-        <div class="btn-spacer"></div>
         <button class="btn-undo" onclick="actionUndo()">UNDO</button>
+        <button class="btn-banker" onclick="actionBankerMiss()">BANKER<span class="btn-subtext">Miss</span></button>
     </div>
 
     <div class="modal" id="ballModal">
@@ -295,8 +286,10 @@
                     <tr><td class="row-label">GD</td><td id="st-p0-avg">0.0</td><td id="st-p1-avg">0.0</td></tr>
                     <tr><td class="row-label">High Run</td><td id="st-p0-hr">0</td><td id="st-p1-hr">0</td></tr>
                     <tr><td class="row-label">Quote</td><td id="st-p0-qt">100%</td><td id="st-p1-qt">100%</td></tr>
+                    
                     <tr style="border-top: 1px solid #444;"><td class="row-label" style="color:#ef6c00;">Safeties</td><td id="st-p0-safe">0</td><td id="st-p1-safe">0</td></tr>
-                    <tr><td class="row-label" style="color:#aaa;">Miss (Fehler)</td><td id="st-p0-miss">0</td><td id="st-p1-miss">0</td></tr>
+                    <tr><td class="row-label" style="color:#aaa;">Miss</td><td id="st-p0-miss">0</td><td id="st-p1-miss">0</td></tr>
+                    <tr><td class="row-label" style="color:var(--accent-purple);">Banker Miss</td><td id="st-p0-bank">0</td><td id="st-p1-bank">0</td></tr>
                     <tr><td class="row-label" style="color:#e53935;">Fouls</td><td id="st-p0-fouls">0</td><td id="st-p1-fouls">0</td></tr>
                 </tbody>
             </table>
@@ -313,9 +306,9 @@
                         <tr>
                             <th class="col-nr">#</th>
                             <th class="col-name" id="log-th-p0">A</th>
-                            <th class="col-sum">∑</th>
+                            <th class="col-sum">A ∑</th>
                             <th class="col-name" id="log-th-p1">B</th>
-                            <th class="col-sum">∑</th>
+                            <th class="col-sum">B ∑</th>
                         </tr>
                     </thead>
                     <tbody id="logBody"></tbody>
@@ -335,7 +328,9 @@
                 <tbody>
                     <tr><td class="row-label">Ø Aufnahme</td><td id="t-p0-avg">0s</td><td id="t-p1-avg">0s</td></tr>
                     <tr><td class="row-label" style="color:#ef6c00;">Ø Safety</td><td id="t-p0-safe-avg">-</td><td id="t-p1-safe-avg">-</td></tr>
-                    <tr><td class="row-label" style="color:#e53935;">Ø Fehler</td><td id="t-p0-err-avg">-</td><td id="t-p1-err-avg">-</td></tr>
+                    <tr><td class="row-label" style="color:#aaa;">Ø Miss</td><td id="t-p0-miss-avg">-</td><td id="t-p1-miss-avg">-</td></tr>
+                    <tr><td class="row-label" style="color:var(--accent-purple);">Ø Banker</td><td id="t-p0-bank-avg">-</td><td id="t-p1-bank-avg">-</td></tr>
+                    
                     <tr style="border-top: 1px solid #444;">
                         <td class="row-label" style="color:var(--active-border);">Schnellste <span style="font-size:0.6rem;">(Sek/Ball)</span></td>
                         <td id="t-p0-fast">-</td><td id="t-p1-fast">-</td>
@@ -367,6 +362,7 @@
         let defaultPlayer = { 
             name: "Spieler", total: 0, run: 0, innings: 0, 
             highRun: 0, misses: 0, safeties: 0, fouls: 0, consecutiveFouls: 0,
+            bankerMisses: 0, // NEW Tracker
             inningLogs: [] 
         };
 
@@ -394,6 +390,11 @@
             p.consecutiveFouls = 0; 
             if(state.ballsOnTable > 0) state.ballsOnTable--;
             if(state.ballsOnTable === 1) state.ballsOnTable = 15; 
+            
+            // Check WIN immediately
+            if(p.total >= state.target) {
+                endInning('win'); return;
+            }
             saveAndRender();
         }
 
@@ -414,19 +415,32 @@
             p.total += pointsToAdd; p.run += pointsToAdd;
             if(p.run > p.highRun) p.highRun = p.run;
             p.consecutiveFouls = 0; state.ballsOnTable = 15;
+            
+            if(p.total >= state.target) { endInning('win'); return; }
             saveAndRender();
         }
 
         function actionSafety() { pushHistory(); state.players[state.activePlayer].safeties++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('safe', 0); }
         function actionMiss() { pushHistory(); state.players[state.activePlayer].misses++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('miss', 0); }
         
+        // NEW BANKER ACTION
+        function actionBankerMiss() { 
+            pushHistory(); 
+            // Banker Miss counts as Miss generally? Or separate? 
+            // User requested separate stat. We count it in bankerMisses.
+            // For Quote: Attempt = Potted + Miss + BankerMiss + Foul
+            state.players[state.activePlayer].bankerMisses++; 
+            state.players[state.activePlayer].consecutiveFouls = 0; 
+            endInning('banker-miss', 0); 
+        }
+
         function actionFoul() { 
             pushHistory(); const p = state.players[state.activePlayer]; 
             p.consecutiveFouls++; p.fouls++; 
             let deduction = -1;
             if (p.consecutiveFouls >= 3) { 
                 p.total -= 15; deduction = -15;
-                alert(`⚠️ 3. Foul!\n-15 Punkte & Re-Rack.`); 
+                alert("ACHTUNG: 3. Foul!\n-15 Punkte & Re-Rack."); 
                 p.consecutiveFouls = 0; state.ballsOnTable = 15; 
             } else { p.total--; } 
             endInning('foul', deduction); 
@@ -437,14 +451,21 @@
             let now = Date.now();
             let durationSec = (now - state.currentInningStart) / 1000;
             
-            // Logic: Delta is the Run unless it's a foul
             let delta = p.run; 
             if(type === 'foul') delta = manualDelta;
 
             p.inningLogs.push({ duration: durationSec, run: p.run, type: type, timestamp: now, scoreDelta: delta });
+            
             state.currentInningStart = now; 
-            p.innings++; p.run = 0;
-            switchPlayer(); saveAndRender();
+            
+            if(type !== 'win') {
+                p.innings++; 
+                p.run = 0;
+                switchPlayer();
+            } else {
+                state.gameEndTime = now;
+            }
+            saveAndRender();
         }
 
         function actionUndo() { if (historyStack.length === 0) return; state = historyStack.pop(); saveAndRender(); }
@@ -472,21 +493,25 @@
             if(p.run > p.highRun) p.highRun = p.run;
             if(diff > 0) p.consecutiveFouls = 0; 
             state.ballsOnTable = n; if(state.ballsOnTable === 1) state.ballsOnTable = 15;
+            
+            if(p.total >= state.target) {
+                document.getElementById('ballModal').style.display = 'none';
+                endInning('win');
+                return;
+            }
+
             document.getElementById('ballModal').style.display = 'none'; saveAndRender();
         }
 
-        // --- LOGIC: CHRONOLOGICAL LOG ---
+        // --- LOG LOGIC ---
         function openLog() {
             const tbody = document.getElementById('logBody');
             tbody.innerHTML = '';
             
-            // Set Headers
             document.getElementById('log-th-p0').innerText = state.players[0].name.substring(0,8);
             document.getElementById('log-th-p1').innerText = state.players[1].name.substring(0,8);
 
-            let maxInnings = Math.max(state.players[0].innings, state.players[1].innings);
-            
-            // Calculate accumulating Totals from scratch based on logs to be accurate
+            let maxInnings = Math.max(state.players[0].inningLogs.length, state.players[1].inningLogs.length);
             let totalA = 0;
             let totalB = 0;
 
@@ -501,11 +526,16 @@
                     let d = (logA.scoreDelta !== undefined) ? logA.scoreDelta : (logA.type==='foul'?-1:logA.run);
                     totalA += d;
                     
-                    if(logA.type==='foul') cellResA = `<span class="res-foul">-1 (F)</span>`;
-                    else if(logA.type==='safe') cellResA = '<span class="res-safe">0 (S)</span>';
-                    else if(logA.type==='miss') cellResA = '<span class="res-miss">0</span>';
-                    else cellResA = `<span class="res-run">${logA.run}</span>`;
+                    let suffix = "";
+                    let cls = "res-run";
+                    if(logA.type==='foul') { suffix = "(F)"; cls = "res-foul"; }
+                    else if(logA.type==='safe') { suffix = "(S)"; cls = "res-safe"; }
+                    else if(logA.type==='miss') { suffix = "(M)"; cls = "res-miss"; }
+                    else if(logA.type==='banker-miss') { suffix = "(B)"; cls = "res-bank"; }
+                    else if(logA.type==='win') { suffix = "🏆"; cls = "res-run"; }
                     
+                    let val = (logA.type==='foul') ? d : logA.run;
+                    cellResA = `<span class="${cls}">${val} ${suffix}</span>`;
                     cellSumA = `<span class="sum-val">${totalA}</span>`;
                 }
 
@@ -515,11 +545,16 @@
                     let d = (logB.scoreDelta !== undefined) ? logB.scoreDelta : (logB.type==='foul'?-1:logB.run);
                     totalB += d;
 
-                    if(logB.type==='foul') cellResB = `<span class="res-foul">-1 (F)</span>`;
-                    else if(logB.type==='safe') cellResB = '<span class="res-safe">0 (S)</span>';
-                    else if(logB.type==='miss') cellResB = '<span class="res-miss">0</span>';
-                    else cellResB = `<span class="res-run">${logB.run}</span>`;
+                    let suffix = "";
+                    let cls = "res-run";
+                    if(logB.type==='foul') { suffix = "(F)"; cls = "res-foul"; }
+                    else if(logB.type==='safe') { suffix = "(S)"; cls = "res-safe"; }
+                    else if(logB.type==='miss') { suffix = "(M)"; cls = "res-miss"; }
+                    else if(logB.type==='banker-miss') { suffix = "(B)"; cls = "res-bank"; }
+                    else if(logB.type==='win') { suffix = "🏆"; cls = "res-run"; }
                     
+                    let val = (logB.type==='foul') ? d : logB.run;
+                    cellResB = `<span class="${cls}">${val} ${suffix}</span>`;
                     cellSumB = `<span class="sum-val">${totalB}</span>`;
                 }
 
@@ -532,7 +567,6 @@
                 `;
                 tbody.appendChild(tr);
             }
-            
             document.getElementById('logModal').style.display = 'flex';
         }
 
@@ -540,8 +574,10 @@
         function calculateStats(p) {
             let avg = (p.total / (p.innings === 0 && p.total > 0 ? 1 : Math.max(1, p.innings))).toFixed(2);
             let positivePots = Math.max(0, p.total); 
-            let estimatedPots = positivePots + p.fouls; // approximation
-            let attempts = estimatedPots + p.misses + p.fouls; 
+            let estimatedPots = positivePots + p.fouls; 
+            // Attempt includes Miss + BankerMiss
+            let b = p.bankerMisses || 0;
+            let attempts = estimatedPots + p.misses + b + p.fouls; 
             let pct = attempts === 0 ? 100 : Math.round((estimatedPots / attempts) * 100);
             return { avg, pct };
         }
@@ -550,8 +586,9 @@
 
         function calculateTimeStats(p) {
             if (p.inningLogs.length === 0) return { avg: "0s", fast: "-", slow: "-", safeAvg: "-", errAvg: "-" };
-            let total=0, safeSum=0, safeCnt=0, errSum=0, errCnt=0;
+            let total=0, safeSum=0, safeCnt=0, missSum=0, missCnt=0, bankSum=0, bankCnt=0;
             let minSpb = Infinity, maxSpb = 0;
+            
             p.inningLogs.forEach(log => {
                 total += log.duration;
                 if (log.run > 0) {
@@ -560,14 +597,17 @@
                     if (spb > maxSpb) maxSpb = spb;
                 }
                 if (log.type === 'safe') { safeSum += log.duration; safeCnt++; }
-                else if (log.type === 'miss' || log.type === 'foul') { errSum += log.duration; errCnt++; }
+                else if (log.type === 'miss' || log.type === 'foul') { missSum += log.duration; missCnt++; }
+                else if (log.type === 'banker-miss') { bankSum += log.duration; bankCnt++; }
             });
+            
             return {
                 avg: Math.round(total/p.inningLogs.length) + "s",
                 fast: minSpb===Infinity?"-":Math.round(minSpb)+"s",
                 slow: maxSpb===0?"-":Math.round(maxSpb)+"s",
                 safeAvg: safeCnt===0?"-":Math.round(safeSum/safeCnt)+"s",
-                errAvg: errCnt===0?"-":Math.round(errSum/errCnt)+"s"
+                missAvg: missCnt===0?"-":Math.round(missSum/missCnt)+"s",
+                bankAvg: bankCnt===0?"-":Math.round(bankSum/bankCnt)+"s"
             };
         }
 
@@ -578,16 +618,21 @@
             if (finished && !state.gameEndTime) state.gameEndTime = Date.now();
             else if (!finished) state.gameEndTime = null;
 
-            // Lock controls visually
+            // Lock controls
             const btnPt = document.getElementById('btn-pt');
             const btnRack = document.getElementById('btn-rack');
+            const btnBalls = document.getElementById('btn-balls');
+            
             if(finished) {
-                btnPt.disabled = true; btnRack.disabled = true;
+                btnPt.disabled = true; btnRack.disabled = true; btnBalls.disabled = true;
                 btnRack.style.backgroundColor = "#555";
                 btnPt.style.backgroundColor = "#555";
+                btnBalls.style.backgroundColor = "#333";
+                btnBalls.style.border = "1px solid #444";
             } else {
-                btnPt.disabled = false; btnRack.disabled = false;
+                btnPt.disabled = false; btnRack.disabled = false; btnBalls.disabled = false;
                 btnPt.style.backgroundColor = "var(--accent-green)";
+                btnBalls.style.backgroundColor = "#455a64";
                 
                 let potPts = state.ballsOnTable > 1 ? (state.ballsOnTable - 1) : 0;
                 if (potPts > 0) { 
@@ -599,7 +644,7 @@
                 }
             }
 
-            document.getElementById('balls-display').innerText = `${state.ballsOnTable} Bälle`;
+            document.getElementById('btn-balls').innerHTML = `${state.ballsOnTable} Bälle<span class="btn-subtext">✎</span>`;
             
             document.getElementById('p0-card').className = `player-card ${active === 0 ? 'active' : ''}`;
             document.getElementById('p1-card').className = `player-card ${active === 1 ? 'active' : ''}`;
@@ -614,7 +659,7 @@
             document.getElementById('p0-hr').innerText = p0.highRun; document.getElementById('p0-pct').innerText = s0.pct + "%";
             document.getElementById('p1-inn').innerText = p1.innings; document.getElementById('p1-avg').innerText = s1.avg;
             document.getElementById('p1-hr').innerText = p1.highRun; document.getElementById('p1-pct').innerText = s1.pct + "%";
-
+            
             document.getElementById('p0-win').style.display = (p0.total >= state.target) ? 'block' : 'none';
             document.getElementById('p1-win').style.display = (p1.total >= state.target) ? 'block' : 'none';
         }
@@ -631,6 +676,7 @@
             fill('st-p0-qt', s0.pct+"%");  fill('st-p1-qt', s1.pct+"%");
             fill('st-p0-safe', p0.safeties); fill('st-p1-safe', p1.safeties);
             fill('st-p0-miss', p0.misses); fill('st-p1-miss', p1.misses);
+            fill('st-p0-bank', p0.bankerMisses || 0); fill('st-p1-bank', p1.bankerMisses || 0);
             fill('st-p0-fouls', p0.fouls); fill('st-p1-fouls', p1.fouls);
             document.getElementById('statsModal').style.display = 'flex';
         }
@@ -643,20 +689,24 @@
             document.getElementById('t-end').innerText = state.gameEndTime ? formatTime(state.gameEndTime) : "läuft...";
             document.getElementById('t-p0-avg').innerText = t0.avg; document.getElementById('t-p1-avg').innerText = t1.avg;
             document.getElementById('t-p0-safe-avg').innerText = t0.safeAvg; document.getElementById('t-p1-safe-avg').innerText = t1.safeAvg;
-            document.getElementById('t-p0-err-avg').innerText = t0.errAvg; document.getElementById('t-p1-err-avg').innerText = t1.errAvg;
+            document.getElementById('t-p0-miss-avg').innerText = t0.missAvg; document.getElementById('t-p1-miss-avg').innerText = t1.missAvg;
+            document.getElementById('t-p0-bank-avg').innerText = t0.bankAvg; document.getElementById('t-p1-bank-avg').innerText = t1.bankAvg;
             document.getElementById('t-p0-fast').innerText = t0.fast; document.getElementById('t-p1-fast').innerText = t1.fast;
             document.getElementById('t-p0-slow').innerText = t0.slow; document.getElementById('t-p1-slow').innerText = t1.slow;
             document.getElementById('timeModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v9_0', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v11_0', JSON.stringify(state)); }
         function loadState() {
-            const saved = localStorage.getItem('141_final_v9_0');
+            const saved = localStorage.getItem('141_final_v11_0');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
                     if(typeof loaded.ballsOnTable === 'undefined') loaded.ballsOnTable = 15;
-                    loaded.players.forEach(p => { if(!p.inningLogs) p.inningLogs = []; });
+                    loaded.players.forEach(p => { 
+                        if(!p.inningLogs) p.inningLogs = []; 
+                        if(!p.bankerMisses) p.bankerMisses = 0;
+                    });
                     state = loaded;
                     document.getElementById('p0-name').value = state.players[0].name;
                     document.getElementById('p1-name').value = state.players[1].name;
@@ -665,7 +715,6 @@
             }
         }
         function updateSettings() { state.players[0].name=document.getElementById('p0-name').value; state.players[1].name=document.getElementById('p1-name').value; state.target=parseInt(document.getElementById('targetScore').value)||100; saveAndRender(); }
-        
         function resetGame(ask) {
             if(ask) document.getElementById('resetModal').style.display = 'flex';
             else { state.players = [ { ...defaultPlayer, name: state.players[0].name, inningLogs: [] }, { ...defaultPlayer, name: state.players[1].name, inningLogs: [] } ]; state.activePlayer = 0; state.ballsOnTable = 15; state.gameStartTime = Date.now(); state.gameEndTime = null; state.currentInningStart = Date.now(); historyStack = []; saveAndRender(); }
