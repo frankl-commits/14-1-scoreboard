@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>14.1 Scoreboard - V11.0 Banker</title>
+    <title>14.1 Scoreboard - V12.1 Final Connected</title>
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%231e1e1e%22 stroke=%22%2300e676%22 stroke-width=%225%22/><text x=%2250%22 y=%2255%22 font-family=%22Arial%22 font-weight=%22bold%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23e0e0e0%22>14</text></svg>">
@@ -20,7 +19,7 @@
             --accent-blue: #1565c0;
             --accent-orange: #ef6c00;
             --accent-grey: #616161;
-            --accent-purple: #5e35b1; /* Banker Color */
+            --accent-purple: #5e35b1;
             --active-border: #00e676;
             --balls-bg: #263238;
         }
@@ -138,9 +137,7 @@
         .btn-miss  { background-color: var(--accent-grey); grid-column: 3; grid-row: 2; border-left: 4px solid #aaa;}
         
         .btn-foul  { background-color: var(--accent-red); grid-column: 1; grid-row: 3; }
-        /* Undo in the middle */
         .btn-undo  { background-color: #444; grid-column: 2; grid-row: 3; font-size: 1.2rem; }
-        /* Banker button new position */
         .btn-banker { background-color: var(--accent-purple); grid-column: 3; grid-row: 3; border-left: 4px solid #9575cd; }
 
         /* --- MODALS --- */
@@ -150,7 +147,7 @@
         }
         .modal-content { 
             background: var(--card-bg); padding: 15px; border-radius: 8px; text-align: center; 
-            width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto; 
+            width: 95%; max-width: 550px; max-height: 90vh; overflow-y: auto; 
         }
         .modal-btn { margin: 10px; padding: 12px 24px; font-size: 1rem; border-radius: 4px; cursor: pointer; width: 100%; }
 
@@ -171,7 +168,7 @@
         .time-header { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .time-value { font-size: 1.1rem; font-weight: bold; color: white; margin-bottom: 15px; }
 
-        /* --- LOG TABLE --- */
+        /* --- LOG TABLE (5 SPALTEN) --- */
         .log-table-container {
             max-height: 60vh; overflow-y: auto; 
             border: 1px solid #333; border-radius: 6px;
@@ -183,15 +180,16 @@
             position: sticky; top: 0; z-index: 2; border-bottom: 1px solid #444;
         }
         .log-table td { padding: 8px 2px; border-bottom: 1px solid #333; text-align: center; vertical-align: middle; }
+        
         .col-nr { width: 10%; color: #666; font-size: 0.7rem; }
-        .col-name { width: 25%; font-weight: bold; font-size:0.9rem;} 
-        .col-sum { width: 15%; font-weight: bold; background: #222; border-left: 1px solid #333; color: var(--active-border); }
+        .col-name { width: 25%; font-weight: bold; font-size: 0.9rem; } 
+        .col-sum { width: 15%; font-weight: bold; background: #222; border-left: 1px solid #333; color: var(--active-border); font-size: 0.9rem; }
+        
         .res-run { color: #fff; font-weight: bold; font-size: 1.1rem; }
-        .res-safe { color: var(--accent-orange); font-size: 0.8rem; }
+        .res-safe { color: var(--accent-orange); font-size: 0.8rem; font-weight: bold; }
         .res-foul { color: var(--accent-red); font-weight: bold; }
         .res-miss { color: #777; font-size: 0.8rem; }
         .res-bank { color: var(--accent-purple); font-size: 0.8rem; font-weight: bold; }
-        .sum-val  { color: var(--active-border); font-size: 0.9rem; }
         .empty-cell { background: #181818; }
 
     </style>
@@ -293,6 +291,8 @@
                     <tr><td class="row-label" style="color:#e53935;">Fouls</td><td id="st-p0-fouls">0</td><td id="st-p1-fouls">0</td></tr>
                 </tbody>
             </table>
+            
+            <button class="modal-btn" id="btn-send-cloud" onclick="sendResultToCloud()" style="background: #0277bd; color:white; margin-bottom: 5px;">☁️ Ergebnis an Verein senden</button>
             <button class="modal-btn" onclick="document.getElementById('statsModal').style.display='none'" style="background:#333; color:white;">Schließen</button>
         </div>
     </div>
@@ -354,6 +354,9 @@
     </div>
 
     <script>
+        // --- API CONFIG ---
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5kK9W5B2d66M6BFSlzozHZyE8ykTgulyHqRIvjrf2QgasSR0Mpuyi_9crzEl_5VwC/exec";
+
         // --- Core Functions ---
         function saveAndRender() { saveState(); render(); }
         function pushHistory() { if(historyStack.length > 50) historyStack.shift(); historyStack.push(JSON.parse(JSON.stringify(state))); }
@@ -362,7 +365,7 @@
         let defaultPlayer = { 
             name: "Spieler", total: 0, run: 0, innings: 0, 
             highRun: 0, misses: 0, safeties: 0, fouls: 0, consecutiveFouls: 0,
-            bankerMisses: 0, // NEW Tracker
+            bankerMisses: 0,
             inningLogs: [] 
         };
 
@@ -380,6 +383,53 @@
             return (state.players[0].total >= state.target || state.players[1].total >= state.target);
         }
 
+        // --- CLOUD SEND ---
+        function sendResultToCloud() {
+            const p0 = state.players[0];
+            const p1 = state.players[1];
+            
+            if(p0.total === 0 && p1.total === 0) {
+                alert("Leeres Spiel wird nicht gesendet.");
+                return;
+            }
+
+            const payload = {
+                p0_name: p0.name,
+                p0_total: p0.total,
+                p0_hr: p0.highRun,
+                p1_name: p1.name,
+                p1_total: p1.total,
+                p1_hr: p1.highRun,
+                innings: Math.max(p0.innings, p1.innings)
+            };
+
+            const btn = document.getElementById('btn-send-cloud');
+            const originalText = btn.innerText;
+            btn.innerText = "Sende...";
+            btn.disabled = true;
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors", 
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                btn.innerText = "Gespeichert! OK";
+                btn.style.backgroundColor = "#2e7d32"; 
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    btn.style.backgroundColor = "#0277bd"; 
+                }, 3000);
+            })
+            .catch(error => {
+                alert("Fehler: " + error);
+                btn.innerText = "Fehler";
+                btn.disabled = false;
+            });
+        }
+
         // --- Actions ---
         function actionPoint() {
             if(isGameOver()) return;
@@ -391,7 +441,6 @@
             if(state.ballsOnTable > 0) state.ballsOnTable--;
             if(state.ballsOnTable === 1) state.ballsOnTable = 15; 
             
-            // Check WIN immediately
             if(p.total >= state.target) {
                 endInning('win'); return;
             }
@@ -422,13 +471,8 @@
 
         function actionSafety() { pushHistory(); state.players[state.activePlayer].safeties++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('safe', 0); }
         function actionMiss() { pushHistory(); state.players[state.activePlayer].misses++; state.players[state.activePlayer].consecutiveFouls = 0; endInning('miss', 0); }
-        
-        // NEW BANKER ACTION
         function actionBankerMiss() { 
             pushHistory(); 
-            // Banker Miss counts as Miss generally? Or separate? 
-            // User requested separate stat. We count it in bankerMisses.
-            // For Quote: Attempt = Potted + Miss + BankerMiss + Foul
             state.players[state.activePlayer].bankerMisses++; 
             state.players[state.activePlayer].consecutiveFouls = 0; 
             endInning('banker-miss', 0); 
@@ -440,7 +484,8 @@
             let deduction = -1;
             if (p.consecutiveFouls >= 3) { 
                 p.total -= 15; deduction = -15;
-                alert("ACHTUNG: 3. Foul!\n-15 Punkte & Re-Rack."); 
+                // EMOJI ENTFERNT
+                alert("ACHTUNG: 3. Foul! -15 Punkte & Re-Rack."); 
                 p.consecutiveFouls = 0; state.ballsOnTable = 15; 
             } else { p.total--; } 
             endInning('foul', deduction); 
@@ -526,8 +571,7 @@
                     let d = (logA.scoreDelta !== undefined) ? logA.scoreDelta : (logA.type==='foul'?-1:logA.run);
                     totalA += d;
                     
-                    let suffix = "";
-                    let cls = "res-run";
+                    let suffix = "", cls = "res-run";
                     if(logA.type==='foul') { suffix = "(F)"; cls = "res-foul"; }
                     else if(logA.type==='safe') { suffix = "(S)"; cls = "res-safe"; }
                     else if(logA.type==='miss') { suffix = "(M)"; cls = "res-miss"; }
@@ -545,8 +589,7 @@
                     let d = (logB.scoreDelta !== undefined) ? logB.scoreDelta : (logB.type==='foul'?-1:logB.run);
                     totalB += d;
 
-                    let suffix = "";
-                    let cls = "res-run";
+                    let suffix = "", cls = "res-run";
                     if(logB.type==='foul') { suffix = "(F)"; cls = "res-foul"; }
                     else if(logB.type==='safe') { suffix = "(S)"; cls = "res-safe"; }
                     else if(logB.type==='miss') { suffix = "(M)"; cls = "res-miss"; }
@@ -575,7 +618,6 @@
             let avg = (p.total / (p.innings === 0 && p.total > 0 ? 1 : Math.max(1, p.innings))).toFixed(2);
             let positivePots = Math.max(0, p.total); 
             let estimatedPots = positivePots + p.fouls; 
-            // Attempt includes Miss + BankerMiss
             let b = p.bankerMisses || 0;
             let attempts = estimatedPots + p.misses + b + p.fouls; 
             let pct = attempts === 0 ? 100 : Math.round((estimatedPots / attempts) * 100);
@@ -585,8 +627,8 @@
         function formatTime(ts) { if(!ts) return "-"; return new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
 
         function calculateTimeStats(p) {
-            if (p.inningLogs.length === 0) return { avg: "0s", fast: "-", slow: "-", safeAvg: "-", errAvg: "-" };
-            let total=0, safeSum=0, safeCnt=0, missSum=0, missCnt=0, bankSum=0, bankCnt=0;
+            if (p.inningLogs.length === 0) return { avg: "0s", fast: "-", slow: "-", safeAvg: "-", errAvg: "-", missAvg: "-", bankAvg: "-" };
+            let total=0, safeSum=0, safeCnt=0, missSum=0, missCnt=0, bankSum=0, bankCnt=0, errSum=0, errCnt=0;
             let minSpb = Infinity, maxSpb = 0;
             
             p.inningLogs.forEach(log => {
@@ -597,8 +639,9 @@
                     if (spb > maxSpb) maxSpb = spb;
                 }
                 if (log.type === 'safe') { safeSum += log.duration; safeCnt++; }
-                else if (log.type === 'miss' || log.type === 'foul') { missSum += log.duration; missCnt++; }
-                else if (log.type === 'banker-miss') { bankSum += log.duration; bankCnt++; }
+                else if (log.type === 'miss') { missSum += log.duration; missCnt++; errSum+=log.duration; errCnt++; }
+                else if (log.type === 'banker-miss') { bankSum += log.duration; bankCnt++; errSum+=log.duration; errCnt++; }
+                else if (log.type === 'foul') { errSum += log.duration; errCnt++; }
             });
             
             return {
@@ -607,7 +650,8 @@
                 slow: maxSpb===0?"-":Math.round(maxSpb)+"s",
                 safeAvg: safeCnt===0?"-":Math.round(safeSum/safeCnt)+"s",
                 missAvg: missCnt===0?"-":Math.round(missSum/missCnt)+"s",
-                bankAvg: bankCnt===0?"-":Math.round(bankSum/bankCnt)+"s"
+                bankAvg: bankCnt===0?"-":Math.round(bankSum/bankCnt)+"s",
+                errAvg: errCnt===0?"-":Math.round(errSum/errCnt)+"s"
             };
         }
 
@@ -618,7 +662,7 @@
             if (finished && !state.gameEndTime) state.gameEndTime = Date.now();
             else if (!finished) state.gameEndTime = null;
 
-            // Lock controls
+            // Lock controls visually
             const btnPt = document.getElementById('btn-pt');
             const btnRack = document.getElementById('btn-rack');
             const btnBalls = document.getElementById('btn-balls');
@@ -696,9 +740,9 @@
             document.getElementById('timeModal').style.display = 'flex';
         }
 
-        function saveState() { localStorage.setItem('141_final_v11_0', JSON.stringify(state)); }
+        function saveState() { localStorage.setItem('141_final_v11_1', JSON.stringify(state)); }
         function loadState() {
-            const saved = localStorage.getItem('141_final_v11_0');
+            const saved = localStorage.getItem('141_final_v11_1');
             if (saved) {
                 try {
                     let loaded = JSON.parse(saved);
